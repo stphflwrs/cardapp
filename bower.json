@@ -1,0 +1,19 @@
+{
+  "name": "cardapp",
+  "version": "0.0.1",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "components"
+  ],
+  "dependencies": {
+    "angular": "~1.4.8",
+    "json3": "~3.3.2",
+    "es5-shim": "~4.4.1",
+    "bootstrap": "~3.3.6",
+    "angular-mocks": "~1.4.8",
+    "angular-ui-router": "ui-router#~0.2.15",
+    "bootstrap-btn-outline-rounded": "~0.0.4",
+    "angular-animate": "~1.4.8"
+  }
+}
