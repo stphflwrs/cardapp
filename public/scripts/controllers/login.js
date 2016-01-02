@@ -12,7 +12,7 @@ angular.module('cardapp')
 
     $scope.submit = function() {
 
-      $location.path('/dashboard');
+      $location.path('/home');
 
       return false;
     }

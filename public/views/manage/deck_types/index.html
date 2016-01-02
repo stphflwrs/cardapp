@@ -1,0 +1,65 @@
+<div>
+    <h3>Deck Type Management</h3>
+    <div class="jumbotron">
+        <div class="row">
+
+            <div class="col-lg-6">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title pull-left"><strong>New Deck Type</strong></h3>
+                        <h4 class="pull-right"><em></em></h4>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="media">
+                            <div class="media-left">
+                                
+                            </div>
+                            <div class="media-object">
+                                <p>Create a new deck type.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <div class="btn-group">
+                                <button type="button" ui-sref="deck_types-create({deck_type_id: deckType._id})" class="btn btn-primary">Create Deck Type</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6" ng-repeat="deckType in deckTypes">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title pull-left"><strong>{{ deckType.label }}</strong></h3>
+                        <h4 class="pull-right"><em>50</em></h4>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="media">
+                            <div class="media-left">
+                                
+                            </div>
+                            <div class="media-object">
+                                <p>{{ deckType.description }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-footer">
+                        <div class="btn-group btn-group-justified">
+                            <div class="btn-group">
+                                <button type="button" ui-sref="deck_types-update({deck_type_id: deckType._id})" class="btn btn-default">Edit</button>
+                            </div>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-danger" ng-click="deleteDeckType($index)">Delete</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
