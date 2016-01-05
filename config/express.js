@@ -8,6 +8,9 @@ var bodyParser = require('body-parser');
 var compress = require('compression');
 var methodOverride = require('method-override');
 
+var passport = require('passport');
+var session = require('express-session');
+
 module.exports = function(app, config) {
   var env = process.env.NODE_ENV || 'development';
   app.locals.ENV = env;
@@ -18,6 +21,13 @@ module.exports = function(app, config) {
 
   // app.engine('html', require('ejs').renderFile);
   app.set('view engine', 'ejs');
+
+
+  require('./passport')(passport);
+
+  app.use(session({ secret: 'hello world' }));
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // app.use(favicon(config.root + '/public/img/favicon.ico'));
   app.use(logger('dev'));

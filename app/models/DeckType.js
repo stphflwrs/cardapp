@@ -5,10 +5,6 @@ var mongoose = require('mongoose'),
 var DeckTypeSchema = new Schema({
     label           : String,
     description     : String,
-    // cards           : [{
-    //     card            : {type: Schema.ObjectId, ref: 'Card'},
-    //     count           : Number 
-    // }],
     cards           : [{
         card           : {type: Schema.ObjectId, ref: 'Card' },
         amount         : Number

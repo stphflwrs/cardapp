@@ -30,12 +30,39 @@ angular
               abstract: true,
               url: '',
               templateUrl: 'views/dashboard.html',
-              controller: 'DashboardCtrl'
+              controller: 'DashboardCtrl',
+              resolve: {
+                loadMyFiles: function ($ocLazyLoad) {
+                    return $ocLazyLoad.load({
+                        name: 'cardapp',
+                        files: [
+                        'scripts/controllers/dashboard.js',
+                        'scripts/services/users.js'
+                        ]
+                    })
+                }
+              }
             })
             .state('home', {
               url: '/home',
               parent: 'base',
-              templateUrl: 'views/dashboard/overview.html'
+              templateUrl: 'views/dashboard/overview.html',
+            })
+            .state('login', {
+                url: '/login',
+                templateUrl: 'views/login.html',
+                controller: 'LoginCtrl',
+                resolve: {
+                    loadMyFiles: function ($ocLazyLoad) {
+                        return $ocLazyLoad.load({
+                            name: 'cardapp',
+                            files: [
+                            'scripts/controllers/login.js',
+                            'scripts/services/users.js'
+                            ]
+                        });
+                    }
+                }
             })
             .state('cards', {
                 url: '/cards',
