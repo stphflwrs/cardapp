@@ -14,6 +14,9 @@
     "angular-mocks": "~1.4.8",
     "angular-ui-router": "ui-router#~0.2.15",
     "bootstrap-btn-outline-rounded": "~0.0.4",
-    "angular-animate": "~1.4.8"
+    "angular-animate": "~1.4.8",
+    "oclazyload": "~1.0.9",
+    "font-awesome": "~4.5.0",
+    "angular-bootstrap": "~0.14.3"
   }
 }

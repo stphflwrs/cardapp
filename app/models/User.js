@@ -7,6 +7,16 @@ var UserSchema = new Schema({
     password        : { type: String, required: true }
 });
 
+UserSchema.set('toJSON', {
+	transform: function (doc, ret, options) {
+		var retJSON = {
+			_id: ret._id,
+			username: ret.username
+		};
+		return retJSON;
+	}
+});
+
 UserSchema.methods.generateHash = function(password) {
 	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
 };
