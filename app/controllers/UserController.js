@@ -22,7 +22,6 @@ router.get('/current', isLoggedIn, function(req, res) {
 });
 
 router.post('/login', function(req, res, next) {
-	console.log(req);
 	passport.authenticate('local-login', function(err, user, info) {
 		if (err) return next(err);
 
