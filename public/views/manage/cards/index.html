@@ -3,8 +3,8 @@
     <div class="jumbotron">
         <div class="row">
             <div class="col-lg-2 col-md-3 col-sm-6">
-	            <div class="panel panel-default">
-		            <div class="panel-heading">New Card</div>
+	            <div class="panel panel-default card">
+		            <div class="panel-heading"><strong>New Card</strong></div>
 		            <div class="panel-body">
 			            <img src="images/cards/sushigo/maki1.png" class="img-responsive"/>
 		            </div>
@@ -19,9 +19,9 @@
             </div>
 
             <div class="col-lg-2 col-md-3 col-sm-6" ng-repeat="card in cards">
-            	<div class="panel panel-default">
+            	<div class="panel panel-default card">
             		<div class="panel-heading">
-            			{{ card.label }}
+            			<strong>{{ card.label }}</strong>
             		</div>
             		<div class="panel-body">
 	            		<img ng-src="{{card.image_url}}" class="img-responsive"/>

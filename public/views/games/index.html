@@ -2,6 +2,32 @@
 	<h2 class="page-heading">Games</h2>
 </div>
 
-<div ng-repeat="game in games">
-{{ game.title }}
+<div class="col-lg-6">
+	<div class="panel panel-default clickable text-center">
+		<div class="panel-body">
+			<h1><i class="fa fa-plus"></i></h1>
+			<h2>Create Game</h2>
+		</div>
+	</div>
+</div>
+
+<div class="col-lg-6" ng-repeat="game in games">
+	<div class="panel panel-default">
+		<div class="panel-body">
+			<h3 class="pull-left">{{ game.title }}</h3>
+			<button class="btn btn-default pull-right"><i class="fa fa-eye"></i> Watch</button>
+			<div class="clearfix"></div>
+			<h4>Deck</h4>
+			<p>Sample text.</p>
+			<h4>In Game</h4>
+			<div class="btn-group btn-group-justified">
+				<div class="btn-group" ng-repeat="player in game.players">
+					<a class="btn btn-default">{{ player.username }}</a>
+				</div>
+				<div class="btn-group">
+					<a class="btn btn-success"><i class="fa fa-gamepad"></i> Join</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
