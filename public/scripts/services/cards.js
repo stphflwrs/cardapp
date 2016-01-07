@@ -1,5 +1,5 @@
 angular.module('cardapp')
-	.service('CardsService', function($http, $q) {
+	.service('CardsService', function ($http, $q) {
 		var baseURL = "/api/cards/";
 		var _headers = {
 			'X-Requested-With': 'XMLHttpRequest',

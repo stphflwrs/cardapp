@@ -64,6 +64,23 @@ angular
                     }
                 }
             })
+            .state('games', {
+                url: '/games',
+                parent: 'base',
+                templateUrl: 'views/games/index.html',
+                controller: 'GamesController',
+                resolve: {
+                    loadMyFiles: function ($ocLazyLoad) {
+                        return $ocLazyLoad.load({
+                            name: 'cardapp',
+                            files: [
+                            'scripts/controllers/games/index.js',
+                            'scripts/services/games.js'
+                            ]
+                        });
+                    }
+                }
+            })
             .state('cards', {
                 url: '/cards',
                 parent: 'base',
