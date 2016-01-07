@@ -9,19 +9,37 @@ module.exports = function(app) {
 	app.use('/api/users', router);
 };
 
-router.get('/', function(req, res) {
+// Methods
+
+var getUsers = function (req, res) {
 	User.find(function(err, users) {
 		if (err) res.send(err);
 
 		else res.json(users);
 	});
-});
+};
 
-router.get('/current', isLoggedIn, function(req, res) {
-	return res.send({ user: req.user });
-});
+var getCurrent = function (req, res) {
+	return res.json(req.user);
+};
 
-router.post('/login', function(req, res, next) {
+var getGamesIn = function (req, res) {
+	User.findById(req.params.user_id).exec(function (err, user) {
+		if (err) return res.send(err);
+
+		Game = mongoose.model('Game');
+		Game.find({
+			'players._id': user._id
+		}).populate('players').exec(function (err, games) {
+			if (err)
+				return res.send(err);
+			else 
+				return res.json(games);
+		});
+	});
+};
+
+var postLogin = function (req, res, next) {
 	passport.authenticate('local-login', function(err, user, info) {
 		if (err) return next(err);
 
@@ -36,14 +54,14 @@ router.post('/login', function(req, res, next) {
 		})
 		
 	})(req, res, next);
-});
+};
 
-router.get('/logout', function(req, res) {
+var getLogout = function (req, res) {
 	req.logout();
 	return res.send({ status: 'OK' });
-});
+};
 
-router.post('/register', function(req, res, next) {
+var postRegister = function (req, res, next) {
 	passport.authenticate('local-register', function(err, user, info) {
 		if (err) return next(err);
 
@@ -53,13 +71,25 @@ router.post('/register', function(req, res, next) {
 
 		return res.send({ status: 'OK' });
 	})(req, res, next);
-});
+};
+
+
+// Middleware
 
 function isLoggedIn(req, res, next) {
 	if (req.isAuthenticated()) {
-		console.log(req);
 		return next();
 	}
 	else
 		return res.status(401).send({ status: "Not logged in." });
 }
+
+// Routes
+
+router.get('/', getUsers);
+router.get('/current', isLoggedIn, getCurrent);
+router.get('/:user_id/games', getGamesIn);
+
+router.post('/login', postLogin);
+router.post('/register', postRegister);
+router.get('/logout', getLogout);

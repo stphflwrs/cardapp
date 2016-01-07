@@ -48,6 +48,23 @@ var deleteGame = function (req, res) {
 	});
 };
 
+var joinGame = function (req, res) {
+	Game.findById(req.body.game_id).populate('players').exec(function (err, game) {
+		if (err)
+			return res.status(422).send(error);
+
+		game.players = game.players.concat(req.user);
+
+		game.save(function (err) {
+			if (err)
+				return res.status(422).send(err);
+			else
+				return res.json(game);
+		});
+	});
+};
+
+// Middleware
 function isLoggedIn(req, res, next) {
 	if (req.isAuthenticated()) {
 		console.log(req);
@@ -59,4 +76,7 @@ function isLoggedIn(req, res, next) {
 
 router.get('/', getGames);
 router.post('/create', isLoggedIn, postGame);
+router.get('/retrieve/:game_id', getGame);
 router.delete('/delete/:game_id', deleteGame);
+
+router.post('/join', isLoggedIn, joinGame);
