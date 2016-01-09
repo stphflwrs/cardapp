@@ -53,6 +53,17 @@ var joinGame = function (req, res) {
 		if (err)
 			return res.status(422).send(error);
 
+		if (!game) {
+			return res.status(422).json({status: "Game not found."});
+		}
+
+		// Check if player is in game
+		for (var i = 0; i < game.players.length; i++) {
+			if (game.players[i]._id.equals(req.user._id)) {
+				return res.status(422).json({status: "Already in game"});
+			}
+		};
+
 		game.players = game.players.concat(req.user);
 
 		game.save(function (err) {
@@ -65,14 +76,18 @@ var joinGame = function (req, res) {
 };
 
 // Middleware
+// ==========
+
 function isLoggedIn(req, res, next) {
 	if (req.isAuthenticated()) {
-		console.log(req);
 		return next();
 	}
 	else
 		return res.status(401).send({ status: "Not logged in." });
 }
+
+// Routes
+// ======
 
 router.get('/', getGames);
 router.post('/create', isLoggedIn, postGame);

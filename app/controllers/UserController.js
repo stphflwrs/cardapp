@@ -10,6 +10,7 @@ module.exports = function(app) {
 };
 
 // Methods
+// =======
 
 var getUsers = function (req, res) {
 	User.find(function(err, users) {
@@ -75,6 +76,7 @@ var postRegister = function (req, res, next) {
 
 
 // Middleware
+// ==========
 
 function isLoggedIn(req, res, next) {
 	if (req.isAuthenticated()) {
@@ -85,6 +87,7 @@ function isLoggedIn(req, res, next) {
 }
 
 // Routes
+// ======
 
 router.get('/', getUsers);
 router.get('/current', isLoggedIn, getCurrent);
