@@ -48,7 +48,7 @@ var postDeck = function (req, res) {
 
 // Retrieve a single deck based on ID
 var getDeck = function (req, res) {
-	Deck.findById(req.params.deck_id, function (err, deck) {
+	Deck.findById(req.params.deck_id).populate('cards').exec(function (err, deck) {
 		if (err)
 			return res.send(err);
 
@@ -70,8 +70,35 @@ var deleteDeck = function (req, res) {
 	});
 };
 
+var shuffleDeck = function (req, res) {
+	Deck.findById(req.params.deck_id).populate('cards').exec(function (err, deck) {
+		if (err)
+			return res.send(err);
+
+		if (!deck)
+			return res.status(404).json({status: "Deck not found."});
+
+		for (var i = 0; i < deck.cards.length; i++) {
+			var j = Math.floor(Math.random() * (i + 1));
+			console.log(j + " ");
+			var temp = deck.cards[i];
+	        deck.cards[i] = deck.cards[j];
+	        deck.cards[j] = temp;
+		}
+
+		deck.save(function (err) {
+			if (err)
+				return res.status(500).send(err);
+			else
+				return res.json(deck);
+		});
+	});
+};
+
 // Routes
 router.get('/', getDecks);
 router.post('/create', postDeck);
 router.get('/retrieve/:deck_id', getDeck);
 router.delete('/delete/:deck_id', deleteDeck);
+
+router.get('/shuffle/:deck_id', shuffleDeck);
