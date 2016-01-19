@@ -1,0 +1,25 @@
+.playfield {
+	height: 100vh;
+	background-color: #3CA2E0;
+}
+
+.playfield-sidebar {
+	height: 100vh;
+	background-color: #ECF0F1;
+}
+
+.bg-white {
+	background-color: white;
+}
+
+.playable-card {
+	border: transparent solid 4px;
+	position: absolute;
+	bottom: -90vh;
+}
+
+.playable-card:hover {
+	cursor: pointer;
+	border: rgba(0, 0, 0, 0.5) solid 4px;
+	bottom: -88vh;
+}

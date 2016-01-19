@@ -3,7 +3,7 @@
 </div>
 
 <div class="col-lg-6">
-	<div class="panel panel-default clickable text-center">
+	<div ui-sref="games-create" class="panel panel-default clickable text-center">
 		<div class="panel-body">
 			<h1><i class="fa fa-plus"></i></h1>
 			<h2>Create Game</h2>
@@ -18,7 +18,7 @@
 			<button class="btn btn-default pull-right"><i class="fa fa-eye"></i> Watch</button>
 			<div class="clearfix"></div>
 			<h4>Deck</h4>
-			<p>Sample text.</p>
+			<p>{{ game.deck_title }}</p>
 			<h4>In Game</h4>
 			<div class="btn-group btn-group-justified">
 				<div class="btn-group" ng-repeat="player in game.players">
