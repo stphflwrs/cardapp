@@ -13,15 +13,17 @@ var DeckTypeSchema = new Schema({
 });
 
 
-DeckTypeSchema.virtual('num_cards')
-    .get(function() {
-        var total = "ABD";
-        // for (var card in this.cards) {
-        //     total += card.count;
-        // }
+DeckTypeSchema.methods.generateDeck = function () {
+    var cards = [];
 
-        return total;
-    });
+    for (var i = 0; i < this.cards.length; i++) {
+        for (var j = 0; j < this.cards[i].amount; j++) {
+            cards = cards.concat(this.cards[i].card);
+        }
+    }
+
+    return cards;
+};
 
 mongoose.model('DeckType', DeckTypeSchema);
 

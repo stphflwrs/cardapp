@@ -1,0 +1,29 @@
+<div class="playfield container-fluid">
+	<div class="row col-lg-12">
+		<div class="col-lg-9">
+			<h2>Playfield</h2>
+			<div class="col-lg-2 col-lg-pull-0">
+				<img class="playable-card img-responsive" src="images/cards/sushigo/maki1.png" />
+			</div>
+			<div class="col-lg-2 col-lg-pull-1">
+				<img class="playable-card img-responsive" src="images/cards/sushigo/dumpling.png" />
+			</div>
+			<div class="col-lg-2 col-lg-pull-2">
+				<img class="playable-card img-responsive" src="images/cards/sushigo/wasabi.png" />
+			</div>
+		</div>
+
+		<div class="playfield-sidebar col-lg-3">
+			<h2>Deck</h2>
+			<div class="panel">
+				<p class="panel-body">{{ deckTitle }}</p>
+			</div>
+			<h2>Players</h2>
+			<ul class="list-group">
+				<li class="list-group-item" ng-repeat="player in players">
+					{{ player.username }}
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

@@ -1,5 +1,5 @@
 angular.module('cardapp')
-	.controller('GamesController', function ($scope, GamesService, UsersService) {
+	.controller('GamesCtrl', function ($scope, GamesService, UsersService) {
 		$scope.display = true;
 
 		$scope.games = [];

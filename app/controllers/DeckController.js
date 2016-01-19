@@ -97,7 +97,7 @@ var shuffleDeck = function (req, res) {
 
 // Routes
 router.get('/', getDecks);
-router.post('/create', postDeck);
+// router.post('/create', postDeck);
 router.get('/retrieve/:deck_id', getDeck);
 router.delete('/delete/:deck_id', deleteDeck);
 
