@@ -122,30 +122,6 @@ var initDeck = function (req, res) {
 // In Game Methods
 // ===============
 
-var drawCard = function (req, res) {
-	Game.findById(req.params.game_id).populate('deck').exec(function (err, game) {
-		if (err)
-			return res.status(500).send(error);
-
-		if (!game)
-			return res.status(404).json({status: "Game not found."});
-
-		var card = game.deck.cards.splice(0, 1);
-		game.deck.save(function (err) {
-			if (err)
-				return res.status(500).send(err);
-
-			var Card = mongoose.model('Card');
-			Card.findById(card).exec(function (err, card) {
-				if (err)
-					return res.status(500).send(err);
-
-				return res.json(card);
-			});
-		});
-	});
-};
-
 var drawCards = function (req, res) {
 	if (!req.body.num_cards)
 		return res.status(422).json({error: "num_cards is required."});
@@ -196,5 +172,4 @@ router.delete('/delete/:game_id', deleteGame);
 router.post('/join/:game_id', isLoggedIn, joinGame);
 router.post('/init_deck/:game_id', initDeck);
 
-router.post('/draw_card/:game_id', drawCard);
 router.post('/draw_cards/:game_id', drawCards);
