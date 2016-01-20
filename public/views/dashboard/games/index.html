@@ -15,14 +15,14 @@
 	<div class="panel panel-default">
 		<div class="panel-body">
 			<h3 class="pull-left">{{ game.title }}</h3>
-			<button class="btn btn-default pull-right"><i class="fa fa-eye"></i> Watch</button>
+			<button type="button" ui-sref="play({game_id: game._id})" class="btn btn-default pull-right">Enter Room</button>
 			<div class="clearfix"></div>
 			<h4>Deck</h4>
 			<p>{{ game.deck_title }}</p>
 			<h4>In Game</h4>
 			<div class="btn-group btn-group-justified">
 				<div class="btn-group" ng-repeat="player in game.players">
-					<a class="btn btn-default">{{ player.username }}</a>
+					<a class="btn btn-default">{{ player.user.username }}</a>
 				</div>
 				<div class="btn-group">
 					<a class="btn btn-success"><i class="fa fa-gamepad"></i> Join</a>

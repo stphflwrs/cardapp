@@ -3,7 +3,11 @@ var mongoose = require('mongoose'),
 	
 var GameSchema = new Schema({
 	title			: {type: String, required: true},
-	players			: [{type: Schema.ObjectId, ref: 'User'}],
+	players			: [{
+		user			: {type: Schema.ObjectId, ref: 'User'},
+		hand			: [{type: Schema.ObjectId, ref: 'Card'}],
+		score			: {type: Number}
+	}],
 	deck			: {type: Schema.ObjectId, ref: 'Deck'},
 	deck_title		: {type: String}
 });

@@ -11,7 +11,7 @@ module.exports = function (app) {
 // =============
 
 var getGames = function (req, res) {
-	Game.find().populate('deckType players').exec(function(err, games) {
+	Game.find().populate('deckType players.user').exec(function(err, games) {
 		if (err)
 			return res.send(err);
 		else
@@ -21,7 +21,7 @@ var getGames = function (req, res) {
 
 var postGame = function (req, res) {
 	var game = new Game(req.body);
-	game.players[0] = req.user;
+	game.players = game.players.concat({user: req.user});
 
 	game.save(function (err) {
 		if (err)
@@ -32,7 +32,7 @@ var postGame = function (req, res) {
 };
 
 var getGame = function (req, res) {
-	Game.findById(req.params.game_id).populate('players deck').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate('players.user deck').exec(function (err, game) {
 		if (err)
 			return res.send(err);
 		else
@@ -55,7 +55,7 @@ var deleteGame = function (req, res) {
 // =============
 
 var joinGame = function (req, res) {
-	Game.findById(req.params.game_id).populate('players').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate('players.user').exec(function (err, game) {
 		if (err)
 			return res.status(422).send(error);
 
@@ -65,12 +65,12 @@ var joinGame = function (req, res) {
 
 		// Check if player is in game
 		for (var i = 0; i < game.players.length; i++) {
-			if (game.players[i]._id.equals(req.user._id)) {
+			if (game.players[i].user._id.equals(req.user._id)) {
 				return res.status(422).json({status: "Already in game"});
 			}
 		};
 
-		game.players = game.players.concat(req.user);
+		game.players = game.players.concat({user: req.user});
 
 		game.save(function (err) {
 			if (err)
@@ -82,7 +82,7 @@ var joinGame = function (req, res) {
 };
 
 var initDeck = function (req, res) {
-	Game.findById(req.params.game_id).populate('deck players').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate('deck').exec(function (err, game) {
 		if (err)
 			return res.status(500).send(error);
 
