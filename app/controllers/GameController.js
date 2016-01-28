@@ -122,6 +122,24 @@ var initDeck = function (req, res) {
 // In Game Methods
 // ===============
 
+var getSelf = function (req, res) {
+	Game.findById(req.params.game_id).populate('players.user').exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
+
+		if (!game)
+			return res.status(404).json({status: "Game not found."});
+
+		for (var i = 0; i < game.players.length; i++) {
+			if (game.players[i].user._id.equals(req.user._id)) {
+				return res.json(game.players[i]);
+			}
+		}
+
+		return res.status(404).json({error: "User not found"});
+	});
+};
+
 var drawCards = function (req, res) {
 	if (!req.body.num_cards)
 		return res.status(422).json({error: "num_cards is required."});
@@ -172,4 +190,5 @@ router.delete('/delete/:game_id', deleteGame);
 router.post('/join/:game_id', isLoggedIn, joinGame);
 router.post('/init_deck/:game_id', initDeck);
 
+router.get('/get_self/:game_id', isLoggedIn, getSelf);
 router.post('/draw_cards/:game_id', drawCards);
