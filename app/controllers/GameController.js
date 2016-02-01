@@ -261,7 +261,13 @@ var setCard = function (req, res) {
 		}
 
 		// Check if round should advance
-		if (game.players[0].hand.length == 0) {
+		var advanceRound = true;
+		game.players.forEach(function (player, index, array) {
+			if (player.hand.length > 0) {
+				advanceRound = false;
+			}
+		});
+		if (advanceRound) {
 			game.advanceRound();
 		}
 

@@ -8,14 +8,27 @@ angular.module('cardapp')
 		$scope.player = [];
 		$scope.opponents = [];
 
-		$scope.selectCard = function (cardIndex) {
-			GamesService.setCard($stateParams.game_id, cardIndex).then(
+		$scope.startGame = function () {
+			GamesService.distributeCards($stateParams.game_id).then(
 				function successCallback(data) {
-					console.log(data)
+					console.log(data);
 				},
 				function errorCallback(data) {
 					console.log(data);
 				});
+		};
+
+		$scope.selectCard = function (cardIndex) {
+			if (!$scope.player.selected_card) {
+				GamesService.setCard($stateParams.game_id, cardIndex).then(
+					function successCallback(data) {
+						$scope.player.selected_card = $scope.player.hand[cardIndex];
+						$scope.player.hand.splice(cardIndex, 1);
+					},
+					function errorCallback(data) {
+						console.log(data);
+					});
+			}
 		};
 
 		var init = function () {
