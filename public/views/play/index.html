@@ -2,15 +2,61 @@
 	<div class="row col-lg-12">
 		<div class="col-lg-9">
 			<h2>Playfield</h2>
-			<div class="col-lg-2 col-lg-pull-0">
-				<img class="playable-card img-responsive" src="images/cards/sushigo/maki1.png" />
+
+			<div class="playfield-opponents row col-md-12">
+				<div ng-repeat="opponent in opponents" class="col-md-6">
+					<div class="panel panel-default col-md-12">
+						<h3>{{ opponent.user.username }}</h3>
+						<div class="col-md-8">
+							<div class="row col-md-12">
+								<h4>Hand</h4>
+								<div ng-repeat="card in opponent.hand track by $index" class="col-md-2">
+									<img ng-src="{{ card.image_url }}" class="img-responsive" />
+								</div>
+							</div>
+							<div class="row col-md-12">
+								<h4>Played Cards</h4>
+								<div ng-repeat="card in opponent.played_cards track by $index" class="col-md-2">
+									<img ng-src="{{ card.image_url }}" class="img-responsive" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-4">
+							<h4>Selected Card</h4>
+							<img ng-src="{{ opponent.selected_card.image_url }}" class="img-responsive" />
+						</div>
+					</div>
+				</div>
 			</div>
-			<div class="col-lg-2 col-lg-pull-1">
-				<img class="playable-card img-responsive" src="images/cards/sushigo/dumpling.png" />
+
+			<!-- Player -->
+			<div class="row col-md-12">
+				<div class="col-md-12">
+					<div class="panel panel-default col-md-12">
+						<h3>You</h3>
+						<div class="col-md-9">
+							<div class="row col-md-12">
+								<h4>Hand</h4>
+								<div ng-repeat="card in player.hand track by $index" ng-click="selectCard($index)" class="col-md-2">
+									<img ng-src="{{ card.image_url }}" class="img-responsive" />
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<h4>Selected Card</h4>
+							<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+						</div>
+
+						<div class="col-md-12">
+							<h4>Played Cards</h4>
+							<div ng-repeat="card in player.played_cards track by $index" class="col-md-2">
+								<img ng-src="{{ card.image_url }}" class="img-responsive" />
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div class="col-lg-2 col-lg-pull-2">
-				<img class="playable-card img-responsive" src="images/cards/sushigo/wasabi.png" />
-			</div>
+
 		</div>
 
 		<div class="playfield-sidebar col-lg-3">

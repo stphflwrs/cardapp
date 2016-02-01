@@ -19,4 +19,13 @@ DeckSchema.methods.drawCard = function () {
 	return this.cards[0];
 };
 
+DeckSchema.methods.drawCards = function (numCards) {
+	var output = [];
+	for (var i = 0; i < numCards; i++) {
+		output.push(cards.pop());
+	}
+
+	return output;
+};
+
 module.exports = mongoose.model('Deck', DeckSchema);
