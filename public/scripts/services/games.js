@@ -66,4 +66,55 @@ angular.module('cardapp')
 
 			return deferred.promise;
 		};
+
+		this.retrieveSelf = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "get_self/" + gameID;
+			$http.get(url).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
+		this.retrieveOpponents = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "get_opponents/" + gameID;
+			$http.get(url).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
+		this.setCard = function (gameID, cardIndex) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "set_card/" + gameID;
+			var data = {
+				card_index: cardIndex
+			};
+			$http.post(url, data,
+			{
+				headers: _headers
+			}).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
 	});
