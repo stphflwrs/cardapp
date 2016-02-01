@@ -97,6 +97,24 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
+		this.distributeCards = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "distribute_cards/" + gameID;
+			$http.post(url, {},
+			{
+				headers: _headers
+			}).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
 		this.setCard = function (gameID, cardIndex) {
 			var deferred = $q.defer();
 
