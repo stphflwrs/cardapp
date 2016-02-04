@@ -12,12 +12,38 @@ var GameSchema = new Schema({
 	}],
 	hand_size		: {type: Number, default: 10},
 	max_players		: {type: Number, default: 5},
+	deck_type		: {type: Schema.ObjectId, ref: 'DeckType'},
 	deck			: {type: Schema.ObjectId, ref: 'Deck'},
 	deck_title		: {type: String},
 	max_rounds		: {type: Number, default: 3},
 	current_round	: {type: Number, default: 0},
 	can_join		: {type: Boolean, default: true}
 });
+
+GameSchema.methods.distributeHands = function () {
+	var game = this;
+	game.players.forEach(function (player) {
+		player.hand = game.deck.cards.splice(0, 1);
+	});
+};
+
+GameSchema.methods.playCard = function (playerID, cardIndex) {
+	var game = this;
+
+	// Find the player based on ID
+	var player = undefined;
+	for (var i = 0; i < game.players.length; i++) {
+		if (game.players[i].user._id.equals(playerID)) {
+			player = game.players[i];
+			break;
+		}
+	}
+
+	console.log(player);
+	console.log(cardIndex);
+
+	player.selected_card = player.hand.splice(cardIndex, 1)[0];
+};
 
 GameSchema.methods.advanceTurn = function () {
 	// Move selected card to played cards
@@ -42,40 +68,18 @@ GameSchema.methods.advanceTurn = function () {
 };
 
 GameSchema.methods.advanceRound = function () {
+	var game = this;
 	// Empty played cards
-	this.players.forEach(function (player, index, array) {
+	game.players.forEach(function (player, index, array) {
 		// Score game first
 
 		player.played_cards = [];
 	});
 
 	// Check if last round
-	this.current_round += 1;
-	if (this.current_round < this.max_rounds) {
-		// Distribute new cards
-		var Deck = mongoose.model('Deck');
-		Deck.findById(this.deck).populate('cards').exec(function (err, deck) {
-			if (err)
-				throw err;
-
-			if (!deck)
-				return false;
-
-			console.log(this);
-
-			
-		}).then(function (deck) {
-			this.players.forEach(function (player, index, array) {
-				player.hand = deck.cards.splice(0, this.hand_size);
-			});
-
-			deck.save(function (err) {
-				if (err)
-					throw err;
-			});
-		});
-
-		
+	game.current_round += 1;
+	if (game.current_round <= game.max_rounds) {
+		game.distributeHands();
 	}
 };
 
