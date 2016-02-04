@@ -188,6 +188,22 @@ var setCard = function (req, res) {
 		// Update selected_card for the currently logged in player
 		game.playCard(req.user._id, req.body.card_index);
 
+		var advanceTurn = true;
+		game.players.forEach(function (player) {
+			if (!player.selected_card) {
+				advanceTurn = false;
+			}
+		});
+		if (advanceTurn) game.advanceTurn();
+
+		var advanceRound = true;
+		game.players.forEach(function (player) {
+			if (player.hand.length > 0) {
+				advanceRound = false;
+			}
+		});
+		if (advanceRound) game.advanceRound();
+
 		// Check if hand is empty, if so next round
 
 		// If hand not empty but all cards played, next turn

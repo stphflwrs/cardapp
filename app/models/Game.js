@@ -23,7 +23,7 @@ var GameSchema = new Schema({
 GameSchema.methods.distributeHands = function () {
 	var game = this;
 	game.players.forEach(function (player) {
-		player.hand = game.deck.cards.splice(0, 1);
+		player.hand = game.deck.cards.splice(0, game.hand_size);
 	});
 };
 
