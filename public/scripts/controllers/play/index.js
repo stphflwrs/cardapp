@@ -9,7 +9,7 @@ angular.module('cardapp')
 		$scope.opponents = [];
 
 		$scope.startGame = function () {
-			GamesService.distributeCards($stateParams.game_id).then(
+			GamesService.startGame($stateParams.game_id).then(
 				function successCallback(data) {
 					console.log(data);
 				},

@@ -203,6 +203,7 @@ angular
                     }
                 }
             })
+
             .state('play', {
                 url: '/play/:game_id',
                 templateUrl: 'views/play/index.html',

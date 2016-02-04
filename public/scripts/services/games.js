@@ -25,25 +25,14 @@ angular.module('cardapp')
 			var deferred = $q.defer();
 
 			var url = baseURL + "create/";
-			$http.post(url, game, 
+			var data = angular.copy(game);
+			data.deck_type_id = deckTypeID;
+			$http.post(url, data, 
 			{
 				headers: _headers
 			}).then(
 				function successCallback(response) {
-					var url = baseURL + "init_deck/" + response.data._id;
-					var data = {
-						deck_type_id: deckTypeID
-					};
-					$http.post(url, data,
-					{
-						headers: _headers
-					}).then(
-						function successCallback(response) {
-							deferred.resolve(response.data);
-						},
-						function errorCallback(response) {
-							deferred.reject(response.data);
-						})
+					deferred.resolve(response.data);
 				},
 				function errorCallback(response) {
 					deferred.reject(response.data);
@@ -87,6 +76,24 @@ angular.module('cardapp')
 
 			var url = baseURL + "get_opponents/" + gameID;
 			$http.get(url).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
+		this.startGame = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "start/" + gameID;
+			$http.post(url, {},
+			{
+				headers: _headers
+			}).then(
 				function successCallback(response) {
 					deferred.resolve(response.data);
 				},
