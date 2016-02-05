@@ -6,7 +6,7 @@
 			<div class="playfield-opponents row col-md-12">
 				<div ng-repeat="opponent in opponents" class="col-md-6">
 					<div class="panel panel-default col-md-12">
-						<h3>{{ opponent.user.username }}</h3>
+						<h3>{{ opponent.user.username }} [Score: {{ opponent.score }}]</h3>
 						<div class="col-md-8">
 							<div class="row col-md-12">
 								<h4>Hand</h4>
@@ -33,7 +33,7 @@
 			<div class="row col-md-12">
 				<div class="col-md-12">
 					<div class="panel panel-default col-md-12">
-						<h3>You</h3>
+						<h3>You [Score: {{ player.score }}]</h3>
 						<div class="col-md-9">
 							<div class="row col-md-12">
 								<h4>Hand</h4>

@@ -187,6 +187,7 @@ var setCard = function (req, res) {
 
 		// Update selected_card for the currently logged in player
 		game.playCard(req.user._id, req.body.card_index);
+		console.log(game.players);
 
 		var advanceTurn = true;
 		game.players.forEach(function (player) {
