@@ -16,10 +16,12 @@ models.forEach(function (model) {
   require(model);
 });
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(server);
 
-require('./config/express')(app, config);
+require('./config/express')(app, config, io);
 
-app.listen(config.port, function () {
+server.listen(config.port, function () {
   console.log('Express server listening on port ' + config.port);
 });
 

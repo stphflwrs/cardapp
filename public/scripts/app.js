@@ -214,7 +214,8 @@ angular
                             name: 'cardapp',
                             files: [
                             'scripts/controllers/play/index.js',
-                            'scripts/services/games.js'
+                            'scripts/services/games.js',
+                            '/socket.io/socket.io.js'
                             ]
                         })
                     }

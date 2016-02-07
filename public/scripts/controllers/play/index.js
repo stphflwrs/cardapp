@@ -8,6 +8,8 @@ angular.module('cardapp')
 		$scope.player = [];
 		$scope.opponents = [];
 
+		var socket = undefined;
+
 		$scope.startGame = function () {
 			GamesService.startGame($stateParams.game_id).then(
 				function successCallback(data) {
@@ -32,6 +34,9 @@ angular.module('cardapp')
 		};
 
 		var init = function () {
+			socket = io('/', {
+				query: "gameID=" + $stateParams.game_id
+			});
 			GamesService.retrieveGame($stateParams.game_id).then(
 				function successCallback(data) {
 					console.log(data);
@@ -61,4 +66,8 @@ angular.module('cardapp')
 		};
 
 		init();
+
+		socket.on('userjoin', function (msg) {
+			console.log(msg);
+		});
 	});
