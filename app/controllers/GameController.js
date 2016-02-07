@@ -3,8 +3,15 @@ var express = require('express'),
 	mongoose = require('mongoose'),
 	Game = mongoose.model('Game');
 
-module.exports = function (app) {
+var io = undefined;
+module.exports = function (app, _io) {
 	app.use('/api/games/', router);
+
+	io = _io;
+	io.on('connection', function (socket) {
+		socket.join("game" + socket.handshake.query.gameID);
+		io.to("game" + socket.handshake.query.gameID).emit('userjoin', "A user joined this room!");
+	});
 };
 
 // Standard CRUD
@@ -12,6 +19,7 @@ module.exports = function (app) {
 
 var getGames = function (req, res) {
 	Game.find().populate('deckType players.user').exec(function(err, games) {
+
 		if (err)
 			return res.send(err);
 		else
