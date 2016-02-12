@@ -44,7 +44,9 @@
 						</div>
 						<div class="col-md-3">
 							<h4>Selected Card</h4>
-							<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+							<div ng-if="player.selected_card">
+								<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+							</div>
 						</div>
 
 						<div class="col-md-12">

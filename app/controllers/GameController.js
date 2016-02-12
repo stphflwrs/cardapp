@@ -134,6 +134,7 @@ var getSelf = function (req, res) {
 		if (!game)
 			return res.status(404).json({status: "Game not found."});
 
+		game.updateScores();
 		for (var i = 0; i < game.players.length; i++) {
 			if (game.players[i].user._id.equals(req.user._id)) {
 				return res.json(game.players[i]);
@@ -152,6 +153,7 @@ var getOpponents = function (req, res) {
 		if (!game)
 			return res.status(404).json({status: "Game not found."});
 
+		game.updateScores();
 		var opponents = [];
 		game.players.forEach(function (player, index, array) {
 			if (!player.user._id.equals(req.user._id)) {
@@ -249,6 +251,8 @@ var setCard = function (req, res) {
 			if (err)
 				return res.status(500).send(err);
 
+			if (advanceTurn)
+				io.to("game" + game._id).emit('advance turn');
 			return res.json({status: "OK"});
 		});
 	});

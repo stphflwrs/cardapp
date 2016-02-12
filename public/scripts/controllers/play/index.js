@@ -1,5 +1,5 @@
 angular.module('cardapp')
-	.controller('PlayCtrl', function ($scope, $stateParams, GamesService) {
+	.controller('PlayCtrl', function ($scope, $stateParams, $q, GamesService) {
 
 		$scope.gameTitle = undefined;
 		$scope.deckTitle = undefined;
@@ -31,6 +31,20 @@ angular.module('cardapp')
 						console.log(data);
 					});
 			}
+		};
+
+		var update = function () {
+			$q.all([
+				GamesService.retrieveSelf($stateParams.game_id),
+				GamesService.retrieveOpponents($stateParams.game_id)
+			]).then(
+				function successCallback(data) {
+					$scope.player = data[0];
+					$scope.opponents = data[1];
+				},
+				function errorCallback(data) {
+					console.log(data);
+				});
 		};
 
 		var init = function () {
@@ -69,5 +83,9 @@ angular.module('cardapp')
 
 		socket.on('userjoin', function (msg) {
 			console.log(msg);
+		});
+
+		socket.on('advance turn', function () {
+			update();
 		});
 	});
