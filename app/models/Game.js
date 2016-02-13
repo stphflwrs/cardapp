@@ -90,7 +90,7 @@ GameSchema.methods.updateScores = function () {
 			var cardValue = {
 				period: cardValueParams[0],
 				method: cardValueParams[1],
-				params: cardValueParams.slice[2]
+				params: cardValueParams.slice(2)
 			};
 
 			if (cardValue.period == "round") {
@@ -111,8 +111,61 @@ GameSchema.methods.updateScores = function () {
 					// Checks for a completed set
 					if (playerData.sets[cardValue.params[0]] == cardValue.params[1]) {
 						playerData.sets[cardValue.params[0]] = 0;
-						player.score += cardValue.params[2];
+						player.score += parseInt(cardValue.params[2]);
 					}
+				}
+				else if (cardValue.method == "tripler") {
+					// Initialize tripler data if necessary
+					if (!playerData.tripler) {
+						playerData.tripler = {};
+					}
+
+					playerData.tripler[cardValue.params[0]] = 1;
+					player.score += parseInt(cardValue.params[1]);
+				}
+				else if (cardValue.method == "tripleafter") {
+					if (playerData.tripler) {
+						if (playerData.tripler[cardValue.params[0]]) {
+							player.score += parseInt(cardValue.params[1]) * 3;
+							delete playerData.tripler[cardValue.params[0]];
+						}
+						else {
+							player.score += parseInt(cardValue.params[1]);
+						}
+					}
+					else {
+						player.score += parseInt(cardValue.params[1]);
+					}
+				}
+				else if (cardValue.method == "count") {
+					if (!playerData.count) {
+						playerData.count = {};
+					}
+
+					// Add card to counts
+					if (!playerData.count[cardValue.params[0]]) {
+						playerData.count[cardValue.params[0]] = 1;
+					}
+					else {
+						playerData.count[cardValue.params[0]] += 1;
+					}
+
+					if (playerData.count[cardValue.params[0]] < cardValue.params.length - 1) {
+						console.log("Score value for " + playerData.count[cardValue.params[0]]);
+						player.score -= parseInt(cardValue.params[playerData.count[cardValue.params[0]] - 1]);
+						player.score += parseInt(cardValue.params[playerData.count[cardValue.params[0]]]);
+					}
+					else if (playerData.count[cardValue.params[0]] == cardValue.params.length - 1) {
+						player.score += parseInt(cardValue.params[cardValue.params.length - 2]);
+						player.score += parseInt(cardValue.params[cardValue.params.length - 1]);
+					}
+				}
+				else if (cardValue.method == "most") {
+					if (!playerData.most) {
+						playerData.most = {};
+					}
+
+					
 				}
 			}
 		});
