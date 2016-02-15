@@ -18,7 +18,7 @@ module.exports = function (app, _io) {
 // =============
 
 var getGames = function (req, res) {
-	Game.find().populate('deckType players.user').exec(function(err, games) {
+	Game.find().populate('deckType players.user ai_players.user').exec(function(err, games) {
 
 		if (err)
 			return res.send(err);
@@ -41,7 +41,7 @@ var postGame = function (req, res) {
 };
 
 var getGame = function (req, res) {
-	Game.findById(req.params.game_id).populate('players.user players.hand deck').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate('deck players.user players.hand ai_players.user ai_players.hand').exec(function (err, game) {
 		if (err)
 			return res.send(err);
 		else
@@ -69,7 +69,7 @@ var joinGame = function (req, res) {
 			return res.status(422).send(error);
 
 		if (!game) {
-			return res.status(422).json({status: "Game not found."});
+			return res.status(404).json({status: "Game not found."});
 		}
 
 		// Check if player is in game
@@ -90,8 +90,70 @@ var joinGame = function (req, res) {
 	});
 };
 
+var addAIPlayer = function (req, res) {
+	Game.findById(req.params.game_id).populate('players.user ai_players.user').exec(function (err, game) {
+		if (err)
+			return res.status(422).send(err);
+
+		if (!game) {
+			return res.status(404).json({status: "Game not found."});
+		}
+
+		var RandomAIPlayer = mongoose.model('RandomAIPlayer');
+		var player = new RandomAIPlayer();
+		player.save(function (err) {
+			if (err)
+				return res.status(422).send(err);
+
+			game.ai_players.push({user: player});
+			game.save(function (err) {
+				if (err)
+					return res.status(422).send(err);
+				else
+					return res.json(game);
+			});
+		});
+	});
+};
+
 var startGame = function (req, res) {
-	Game.findById(req.params.game_id).populate('deck deck_type').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate([{
+		path: 'deck',
+		model: 'Deck'
+	},{
+		path: 'deck_type',
+		model: 'DeckType'
+	},{
+		path: 'players',
+		populate: [{
+			path: 'user',
+			model: 'User'
+		},{
+			path: 'hand',
+			model: 'Card'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'selected_card',
+			model: 'Card'
+		}]
+	},{
+		path: 'ai_players',
+		populate: [{
+			path: 'user',
+			model: 'AIPlayer'
+		},{
+			path: 'hand',
+			model: 'Card'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'selected_card',
+			model: 'Card'
+		}]
+	}]).exec(function (err, game) {
 		if (err)
 			return res.status(500).send(error);
 
@@ -146,7 +208,37 @@ var getSelf = function (req, res) {
 };
 
 var getOpponents = function (req, res) {
-	Game.findById(req.params.game_id).populate('players.user players.hand players.played_cards players.selected_card').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate([{
+		path: 'players',
+		populate: [{
+			path: 'user',
+			model: 'User'
+		},{
+			path: 'hand',
+			model: 'Card'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'selected_card',
+			model: 'Card'
+		}]
+	},{
+		path: 'ai_players',
+		populate: [{
+			path: 'user',
+			model: 'AIPlayer'
+		},{
+			path: 'hand',
+			model: 'Card'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'selected_card',
+			model: 'Card'
+		}]
+	}]).exec(function (err, game) {
 		if (err)
 			return res.status(500).send(err);
 
@@ -160,6 +252,9 @@ var getOpponents = function (req, res) {
 				opponents = opponents.concat(player);
 			}
 		});
+		game.ai_players.forEach(function (aiPlayer, index) {
+			opponents.push(aiPlayer);
+		});
 
 		return res.json(opponents);
 	});
@@ -168,11 +263,7 @@ var getOpponents = function (req, res) {
 var setCard = function (req, res) {
 	Game.findById(req.params.game_id).populate([{
 		path: 'deck',
-		model: 'Deck',
-		populate: {
-			path: 'cards',
-			model: 'Card'
-		}
+		model: 'Deck'
 	},{
 		path: 'players',
 		populate: [{
@@ -182,10 +273,25 @@ var setCard = function (req, res) {
 			path: 'hand',
 			model: 'Card'
 		},{
+			path: 'played_cards',
+			model: 'Card'
+		},{
 			path: 'selected_card',
+			model: 'Card'
+		}]
+	},{
+		path: 'ai_players',
+		populate: [{
+			path: 'user',
+			model: 'AIPlayer'
+		},{
+			path: 'hand',
 			model: 'Card'
 		},{
 			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'selected_card',
 			model: 'Card'
 		}]
 	}]).exec(function (err, game) {
@@ -197,11 +303,15 @@ var setCard = function (req, res) {
 
 		// Update selected_card for the currently logged in player
 		game.playCard(req.user._id, req.body.card_index);
-		console.log(game.players);
 
 		var advanceTurn = true;
 		game.players.forEach(function (player) {
 			if (!player.selected_card) {
+				advanceTurn = false;
+			}
+		});
+		game.ai_players.forEach(function (aiPlayer) {
+			if (!aiPlayer.selected_card) {
 				advanceTurn = false;
 			}
 		});
@@ -210,6 +320,11 @@ var setCard = function (req, res) {
 		var advanceRound = true;
 		game.players.forEach(function (player) {
 			if (player.hand.length > 0) {
+				advanceRound = false;
+			}
+		});
+		game.ai_players.forEach(function (aiPlayer) {
+			if (aiPlayer.hand.length > 0) {
 				advanceRound = false;
 			}
 		});
@@ -278,6 +393,7 @@ router.get('/retrieve/:game_id', getGame);
 router.delete('/delete/:game_id', deleteGame);
 
 router.post('/join/:game_id', isLoggedIn, joinGame);
+router.post('/addai/:game_id', addAIPlayer);
 router.post('/start/:game_id', startGame);
 
 router.get('/get_self/:game_id', isLoggedIn, getSelf);

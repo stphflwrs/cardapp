@@ -10,10 +10,20 @@ angular.module('cardapp')
 
 		var socket = undefined;
 
+		$scope.addAIPlayer = function () {
+			GamesService.addAIPlayer($stateParams.game_id).then(
+				function successCallback(data) {
+					update();
+				},
+				function errorCallback(data) {
+					console.log(data);
+				});
+		};
+
 		$scope.startGame = function () {
 			GamesService.startGame($stateParams.game_id).then(
 				function successCallback(data) {
-					console.log(data);
+					update();
 				},
 				function errorCallback(data) {
 					console.log(data);
