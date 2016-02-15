@@ -10,6 +10,13 @@ var GameSchema = new Schema({
 		played_cards	: [{type: Schema.ObjectId, ref: 'Card'}],
 		score			: {type: Number, default: 0}
 	}],
+	ai_players		: [{
+		user			: {type: Schema.ObjectId, ref: 'AIPlayer'},
+		hand			: [{type: Schema.ObjectId, ref: 'Card'}],
+		selected_card	: {type: Schema.ObjectId, ref: 'Card'},
+		played_cards	: [{type: Schema.ObjectId, ref: 'Card'}],
+		score			: {type: Number, default: 0}
+	}],
 	hand_size		: {type: Number, default: 10},
 	max_players		: {type: Number, default: 5},
 	deck_type		: {type: Schema.ObjectId, ref: 'DeckType'},
@@ -25,6 +32,14 @@ GameSchema.methods.distributeHands = function () {
 	game.players.forEach(function (player) {
 		player.hand = game.deck.cards.splice(0, game.hand_size);
 	});
+	game.ai_players.forEach(function (aiPlayer) {
+		aiPlayer.hand = game.deck.cards.splice(0, game.hand_size);
+		(function (aiPlayer) {
+			setTimeout(function () {
+				game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+			}, 0);
+		})(aiPlayer);
+	});
 };
 
 GameSchema.methods.playCard = function (playerID, cardIndex) {
@@ -38,6 +53,12 @@ GameSchema.methods.playCard = function (playerID, cardIndex) {
 			break;
 		}
 	}
+	for (var i = 0; i < game.ai_players.length; i++) {
+		if (game.ai_players[i].user._id.equals(playerID)) {
+			player = game.ai_players[i];
+			break;
+		}
+	}
 
 	if (!player.selected_card) {
 		player.selected_card = player.hand.splice(cardIndex, 1)[0];
@@ -45,25 +66,53 @@ GameSchema.methods.playCard = function (playerID, cardIndex) {
 };
 
 GameSchema.methods.advanceTurn = function () {
+	var game = this;
+
 	// Move selected card to played cards
-	this.players.forEach(function (player, index, array) {
+	game.players.forEach(function (player, index, array) {
 		player.played_cards.push(player.selected_card);
 		player.selected_card = undefined;
 	});
+	game.ai_players.forEach(function (aiPlayer, index, array) {
+		aiPlayer.played_cards.push(aiPlayer.selected_card);
+		aiPlayer.selected_card = undefined;
+	});
 
 	// Move hands to the next player
-	var tempHand = this.players[0].hand;
-	for (var i = 0; i < this.players.length; i++) {
+	var tempHand = game.players[0].hand;
+	for (var i = 0; i < game.players.length; i++) {
 		// Last player
-		if (i == this.players.length - 1) {
-			this.players[0].hand = tempHand;
+		if (i == game.players.length - 1) {
+			game.players[0].hand = tempHand;
 		}
 		else {
-			var temp = this.players[i + 1].hand;
-			this.players[i + 1].hand = tempHand;
+			var temp = game.players[i + 1].hand;
+			game.players[i + 1].hand = tempHand;
 			tempHand = temp;
 		}
 	}
+	for (var i = 0; i < game.ai_players.length; i++) {
+		// Last player
+		if (i == game.ai_players.length - 1) {
+			game.players[0].hand = game.ai_players[game.ai_players.length - 1].hand;
+			game.ai_players[game.ai_players.length - 1].hand = tempHand;
+		}
+		else {
+			var temp = game.ai_players[i + 1].hand;
+			game.ai_players[i + 1].hand = tempHand;
+			tempHand = temp;
+		}
+	}
+
+	// Begin AI selection
+	game.ai_players.forEach(function (aiPlayer) {
+		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+		// (function (aiPlayer) {
+		// 	setTimeout(function () {
+		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+		// 	}, 0);
+		// })(aiPlayer);
+	});
 };
 
 GameSchema.methods.advanceRound = function () {
@@ -71,6 +120,9 @@ GameSchema.methods.advanceRound = function () {
 	// Empty played cards
 	game.players.forEach(function (player, index, array) {
 		player.played_cards = [];
+	});
+	game.ai_players.forEach(function (aiPlayer) {
+		aiPlayer.played_cards = [];
 	});
 
 	// Check if last round

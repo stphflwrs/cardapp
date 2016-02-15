@@ -86,6 +86,42 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
+		this.joinGame = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "join/" + gameID;
+			$http.post(url, {},
+			{
+				headers: _headers
+			}).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
+		this.addAIPlayer = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "addai/" + gameID;
+			$http.post(url, {},
+			{
+				headers: _headers
+			}).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
 		this.startGame = function (gameID) {
 			var deferred = $q.defer();
 
