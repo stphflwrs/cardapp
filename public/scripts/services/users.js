@@ -12,6 +12,27 @@ angular.module('cardapp')
 			var url = baseURL + "current/";
 			$http.get(url).then(
 				function successCallback(response) {
+					if (response.data.username)
+						deferred.resolve(response.data);
+					else
+						deferred.reject(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
+		this.register = function (username, password) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "register/";
+			var data = { 'username': username, 'password': password };
+			$http.post(url, data, {
+				headers: _headers
+			}).then(
+				function successCallback(response) {
 					deferred.resolve(response.data);
 				},
 				function errorCallback(response) {
@@ -19,7 +40,7 @@ angular.module('cardapp')
 				});
 
 			return deferred.promise;
-		}
+		};
 
 		this.login = function(username, password) {
 			var deferred = $q.defer();

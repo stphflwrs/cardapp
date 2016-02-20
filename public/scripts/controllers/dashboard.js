@@ -15,7 +15,7 @@ angular.module('cardapp')
     	$scope.logout = function() {
     		UsersService.logout().then(
     			function successCallback(data) {
-    				$state.go('login');
+    				$state.reload('dashboard');
     			},
     			function errorCallback(data) {
     				console.log("Error logging out.");
