@@ -43,6 +43,22 @@ angular
                     }
                 }
             })
+            .state('register', {
+                url: '/register',
+                templateUrl: 'views/register.html',
+                controller: 'RegisterCtrl',
+                resolve: {
+                    loadMyFiles: function ($ocLazyLoad) {
+                        return $ocLazyLoad.load({
+                            name: 'cardapp',
+                            files: [
+                            'scripts/controllers/register.js',
+                            'scripts/services/users.js'
+                            ]
+                        });
+                    }
+                }
+            })
             .state('dashboard', {
               abstract: true,
               url: '/home',

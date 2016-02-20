@@ -5,22 +5,25 @@
                 <div class="col-sm-3 col-md-2 sidebar">
 
                     <div class="text-center">
-                        <h2 class="brand">Ani Theme <small>Free Edition</small></h2>
+                        <h2 class="brand">Card Game <small>Senior Project Ed.</small></h2>
                         <img src="images/flat-avatar.png" class="user-avatar" /><br />
-                        <a ng-show="!loggedIn" ui-sref="login" class="btn btn-white btn-outline btn-rounded btn-sm">Login</a>
-                        <a ng-show="!loggedIn" class="btn btn-white btn-outline btn-rounded btn-sm">Register</a>
-                        <a ng-show="loggedIn" href class="btn btn-white btn-outline btn-rounded btn-sm" ng-click="logout()">Logout</a>
+                        <div ng-show="!loggedIn">
+                            <a ui-sref="login" class="btn btn-white btn-outline btn-rounded btn-sm">Login</a>
+                            <a ui-sref="register" class="btn btn-white btn-outline btn-rounded btn-sm">Register</a>
+                        </div>
+                        <div ng-show="loggedIn">
+                            <p><small>Welcome, </small> {{ user.username }}</p>
+                            <a ng-show="loggedIn" href class="btn btn-white btn-outline btn-rounded btn-sm" ng-click="logout()">Logout</a>
+                        </div>
                     </div>
 
                     <ul class="nav nav-sidebar">
-                        <li ng-class="{active: $state.includes('home')}"><a ui-sref="home">Home</a></li>
+                        <li ui-sref-active="active"><a ui-sref="home">Home</a></li>
                         
-                        <li ng-class="{active: $state.includes('games')}">
-                            <a ui-sref="games">Games</a>
-                        </li>
+                        <li ui-sref-active="active"><a ui-sref="games">Games</a></li>
 
-                        <li ng-class="{active: $state.includes('cards')}"><a ui-sref="cards">Cards</a></li>
-                        <li ng-class="{active: $state.includes('deck_types')}"><a ui-sref="deck_types">Deck Types</a></li>
+                        <li ui-sref-active="active"><a ui-sref="cards">Cards</a></li>
+                        <li ui-sref-active="active"><a ui-sref="deck_types">Deck Types</a></li>
                     </ul>
 
                 </div>

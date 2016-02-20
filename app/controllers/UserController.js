@@ -21,7 +21,12 @@ var getUsers = function (req, res) {
 };
 
 var getCurrent = function (req, res) {
-	return res.json(req.user);
+	if (req.isAuthenticated()) {
+		return res.json(req.user);
+	}
+	else {
+		return res.json({status: "FAIL"});
+	}
 };
 
 var getGamesIn = function (req, res) {
@@ -67,10 +72,16 @@ var postRegister = function (req, res, next) {
 		if (err) return next(err);
 
 		if (!user) {
+			console.log(user);
 			return res.status(422).send({ status: 'FAIL' , errors: info });
 		}
 
-		return res.send({ status: 'OK' });
+		req.login(user, function (err) {
+			if (err)
+				return next(err);
+
+			return res.send({ status: 'OK', 'user': user, 'info': info});
+		});
 	})(req, res, next);
 };
 
@@ -90,7 +101,7 @@ function isLoggedIn(req, res, next) {
 // ======
 
 router.get('/', getUsers);
-router.get('/current', isLoggedIn, getCurrent);
+router.get('/current', getCurrent);
 router.get('/:user_id/games', getGamesIn);
 
 router.post('/login', postLogin);

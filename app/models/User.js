@@ -4,7 +4,8 @@ var mongoose = require('mongoose'),
 
 var UserSchema = new Schema({
     username        : { type: String, unique: true, required: true },
-    password        : { type: String, required: true }
+    password        : { type: String, required: true },
+    clearance		: { type: Number, default: 0 }
 });
 
 UserSchema.set('toJSON', {

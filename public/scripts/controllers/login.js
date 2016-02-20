@@ -22,6 +22,6 @@ angular.module('cardapp')
                 });
 
             return false;
-        }
+        };
 
   });
