@@ -1,12 +1,12 @@
 angular.module('cardapp')
-	.service('UsersService', function($http, $q) {
+	.service('UsersService', function ($http, $q) {
 		var baseURL = "/api/users/";
 		var _headers = {
 			"X-Requested-With": "XMLHttpRequest",
 			"ContentType": "x-www-form-urlencoded"
 		}
 
-		this.currentUser = function() {
+		this.currentUser = function () {
 			var deferred = $q.defer();
 
 			var url = baseURL + "current/";
@@ -42,7 +42,7 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
-		this.login = function(username, password) {
+		this.login = function (username, password) {
 			var deferred = $q.defer();
 
 			var url = baseURL + "login/";
@@ -60,7 +60,7 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
-		this.logout = function() {
+		this.logout = function () {
 			var deferred = $q.defer();
 
 			var url = baseURL + "logout/";

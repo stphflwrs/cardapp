@@ -30,7 +30,7 @@
 			</div>
 
 			<!-- Player -->
-			<div class="row col-md-12">
+			<div ng-if="loggedIn" class="row col-md-12">
 				<div class="col-md-12">
 					<div class="panel panel-default col-md-12">
 						<h3>You [Score: {{ player.score }}]</h3>
@@ -78,7 +78,14 @@
 			</ul>
 			<h2>Options</h2>
 			<div class="btn-group btn-group-justified">
-				<button ng-click="startGame()" class="btn btn-default">Start Game</button>
+				<div class="btn-group">
+					<button ng-click="startGame()" class="btn btn-success">Join Game</button>
+				</div>
+			</div>
+			<div class="btn-group btn-group-justified">
+				<div class="btn-group">
+					<button ng-click="startGame()" class="btn btn-default">Start Game</button>
+				</div>
 			</div>
 		</div>
 	</div>

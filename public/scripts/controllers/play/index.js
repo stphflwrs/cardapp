@@ -1,5 +1,7 @@
 angular.module('cardapp')
-	.controller('PlayCtrl', function ($scope, $stateParams, $q, GamesService) {
+	.controller('PlayCtrl', function ($scope, $stateParams, $q, UsersService, GamesService) {
+		$scope.loggedIn = false;
+		$scope.user = {};
 
 		$scope.gameTitle = undefined;
 		$scope.deckTitle = undefined;
@@ -61,32 +63,59 @@ angular.module('cardapp')
 			socket = io('/', {
 				query: "gameID=" + $stateParams.game_id
 			});
-			GamesService.retrieveGame($stateParams.game_id).then(
-				function successCallback(data) {
-					console.log(data);
-					$scope.gameTitle = data.title;
-					$scope.deckTitle = data.deck_title;
-					$scope.players = data.players;
 
-					GamesService.retrieveOpponents($stateParams.game_id).then(
+			UsersService.currentUser().then(
+        		function successCallback(data) {
+        			$scope.loggedIn = true;
+        			$scope.user = data;
+        			fetchGame();
+        		},
+        		function errorCallback(data) {
+        			fetchGame();
+        		});
+
+			var fetchGame = function () {
+				GamesService.retrieveGame($stateParams.game_id).then(
+					function successCallback(data) {
+						$scope.gameTitle = data.title;
+						$scope.deckTitle = data.deck_title;
+						$scope.players = data.players;
+						if ($scope.loggedIn) {
+							fetchPlayers(false);
+						}
+						else {
+							fetchPlayers(true);
+						}
+					},
+					function errorCallback(data) {
+						console.log(data);
+					});
+			};
+
+			var fetchPlayers = function (isSpectating) {
+				if (isSpectating) {
+					GamesService.retrievePlayers($stateParams.game_id).then(
 						function successCallback(data) {
 							$scope.opponents = data;
-
-							GamesService.retrieveSelf($stateParams.game_id).then(
-								function successCallback(data) {
-									$scope.player = data;
-								},
-								function errorCallback(data) {
-									console.log(data);
-								});
 						},
 						function errorCallback(data) {
 							console.log(data);
 						});
-				},
-				function errorCallback(data) {
-					console.log(data);
-				});
+				}
+				else {
+					$q.all([
+						GamesService.retrieveSelf($stateParams.game_id),
+						GamesService.retrieveOpponents($stateParams.game_id)
+					]).then(
+						function successCallback(data) {
+							$scope.player = data[0];
+							$scope.opponents = data[1];
+						},
+						function errorCallback(data) {
+							console.log(data);
+						});
+				}
+			};
 		};
 
 		init();

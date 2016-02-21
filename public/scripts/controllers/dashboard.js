@@ -34,4 +34,14 @@ angular.module('cardapp')
         };
 
         init();
+
+        $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+            var clearance = 0;
+            if ($scope.loggedIn)
+                clearance = $scope.user.clearance;
+            
+            if (toState.clearance > clearance) {
+                $state.go('login');
+            }
+        });
     });

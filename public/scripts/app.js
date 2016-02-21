@@ -28,6 +28,7 @@ angular
 
         $stateProvider
             .state('login', {
+                clearance: 0,
                 url: '/login',
                 templateUrl: 'views/login.html',
                 controller: 'LoginCtrl',
@@ -44,6 +45,7 @@ angular
                 }
             })
             .state('register', {
+                clearance: 0,
                 url: '/register',
                 templateUrl: 'views/register.html',
                 controller: 'RegisterCtrl',
@@ -60,6 +62,7 @@ angular
                 }
             })
             .state('dashboard', {
+              clearance: 0,
               abstract: true,
               url: '/home',
               templateUrl: 'views/dashboard.html',
@@ -77,11 +80,13 @@ angular
               }
             })
             .state('home', {
+              clearance: 0,
               url: '/',
               parent: 'dashboard',
               templateUrl: 'views/dashboard/overview.html',
             })
             .state('games', {
+                clearance: 0,
                 url: '/games',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/games/index.html',
@@ -99,6 +104,7 @@ angular
                 }
             })
             .state('games-create', {
+                clearance: 1,
                 url: '/games/create',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/games/create.html',
@@ -117,6 +123,7 @@ angular
                 }
             })
             .state('cards', {
+                clearance: 5,
                 url: '/cards',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/cards/index.html',
@@ -134,6 +141,7 @@ angular
                 }
             })
             .state('cards-create', {
+                clearance: 5,
                 url: '/cards/new',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/cards/create.html',
@@ -151,6 +159,7 @@ angular
                 }
             })
             .state('cards-update', {
+                clearance: 5,
                 url: '/cards/edit/:card_id',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/cards/update.html',
@@ -168,6 +177,7 @@ angular
                 }
             })
             .state('deck_types', {
+                clearance: 5,
                 url: '/decktypes',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/deck_types/index.html',
@@ -185,6 +195,7 @@ angular
                 }
             })
             .state('deck_types-create', {
+                clearance: 5,
                 url: '/deck_types/new',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/deck_types/create.html',
@@ -202,6 +213,7 @@ angular
                 }
             })
             .state('deck_types-update', {
+                clearance: 5,
                 url: '/decktypes/edit/:deck_type_id',
                 parent: 'dashboard',
                 templateUrl: 'views/dashboard/manage/deck_types/update.html',
@@ -221,6 +233,7 @@ angular
             })
 
             .state('play', {
+                clearance: 1,
                 url: '/play/:game_id',
                 templateUrl: 'views/play/index.html',
                 controller: 'PlayCtrl',
@@ -230,10 +243,11 @@ angular
                             name: 'cardapp',
                             files: [
                             'scripts/controllers/play/index.js',
+                            'scripts/services/users.js',
                             'scripts/services/games.js',
                             '/socket.io/socket.io.js'
                             ]
-                        })
+                        });
                     }
                 }
             });

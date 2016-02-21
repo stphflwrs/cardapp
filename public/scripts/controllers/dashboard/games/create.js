@@ -12,7 +12,6 @@ angular.module('cardapp')
 			DeckTypesService.retrieveDeckType(deckType._id).then(
 				function successCallback(data) {
 					$scope.selectedDeckType = data;
-					console.log($scope.selectedDeckType);
 				},
 				function errorCallback(data) {
 					console.log(data);
@@ -21,7 +20,6 @@ angular.module('cardapp')
 
 		$scope.saveGame = function () {
 			if (!validate()) {
-				console.log($scope.errors);
 				return;
 			}
 
@@ -29,8 +27,6 @@ angular.module('cardapp')
 				title: $scope.gameTitle,
 				deck_title: $scope.selectedDeckType.label
 			};
-
-			console.log(submission);
 
 			GamesService.createGame(submission, $scope.selectedDeckType._id).then(
 				function successCallback(data) {
@@ -60,7 +56,7 @@ angular.module('cardapp')
 				return true;
 			}
 			else {
-				return true;
+				return false;
 			}
 		};
 

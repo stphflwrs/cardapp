@@ -260,6 +260,37 @@ var getOpponents = function (req, res) {
 	});
 };
 
+var getPlayers = function (req, res) {
+	Game.findById(req.params.game_id).populate([{
+		path: 'players',
+		populate: [{
+			path: 'user',
+			model: 'User'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		}]
+	},{
+		path: 'ai_players',
+		populate: [{
+			path: 'user',
+			model: 'AIPlayer'
+		},{
+			path: 'played_cards',
+			model: 'Card'
+		}]
+	}]).exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
+
+		if (!game)
+			return res.status(404).json({status: "Game not found."});
+
+		game.updateScores();
+		return res.json(game.players.concat(game.ai_players));
+	});
+};
+
 var setCard = function (req, res) {
 	Game.findById(req.params.game_id).populate([{
 		path: 'deck',
@@ -398,5 +429,6 @@ router.post('/start/:game_id', startGame);
 
 router.get('/get_self/:game_id', isLoggedIn, getSelf);
 router.get('/get_opponents/:game_id', isLoggedIn, getOpponents);
+router.get('/get_players/:game_id', getPlayers);
 router.post('/set_card/:game_id', isLoggedIn, setCard);
 // router.post('/advance_turn/:game_id', isLoggedIn, advanceTurn);

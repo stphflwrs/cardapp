@@ -1,11 +1,17 @@
 .playfield {
 	height: 100vh;
 	background-color: #3CA2E0;
+	color: white;
+}
+
+.playfield-opponents {
+	color: black;
 }
 
 .playfield-sidebar {
 	height: 100vh;
 	background-color: #ECF0F1;
+	color: black;
 }
 
 .bg-white {

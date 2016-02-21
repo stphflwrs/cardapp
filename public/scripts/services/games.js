@@ -86,6 +86,21 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
+		this.retrievePlayers = function (gameID) {
+			var deferred = $q.defer();
+
+			var url = baseURL + "get_players/" + gameID;
+			$http.get(url).then(
+				function successCallback(response) {
+					deferred.resolve(response.data);
+				},
+				function errorCallback(response) {
+					deferred.reject(response.data);
+				});
+
+			return deferred.promise;
+		};
+
 		this.joinGame = function (gameID) {
 			var deferred = $q.defer();
 
