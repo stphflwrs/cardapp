@@ -10,7 +10,7 @@ module.exports = function (app, _io) {
 	io = _io;
 	io.on('connection', function (socket) {
 		socket.join("game" + socket.handshake.query.gameID);
-		io.to("game" + socket.handshake.query.gameID).emit('userjoin', "A user joined this room!");
+		io.to("game" + socket.handshake.query.gameID).emit('user join', "A user joined this room!");
 	});
 };
 
@@ -360,38 +360,6 @@ var setCard = function (req, res) {
 			}
 		});
 		if (advanceRound) game.advanceRound();
-
-		// Check if hand is empty, if so next round
-
-		// If hand not empty but all cards played, next turn
-
-		// // Check if round should advance
-		// var advanceRound = true;
-		// game.players.forEach(function (player, index, array) {
-		// 	if (player.hand.length > 0) {
-		// 		advanceRound = false;
-		// 	}
-		// });
-		// if (advanceRound) {
-		// 	game.advanceRound();
-		// 	game.save(function (err) {
-		// 		if (err)
-		// 			return res.status(500).send(err);
-
-		// 		return res.json({status: "OK"});
-		// 	});
-		// }
-
-		// // Check if turn should advance
-		// var advanceTurn = true;
-		// game.players.forEach(function (player, index, array) {
-		// 	if (!player.selected_card) {
-		// 		advanceTurn = false;
-		// 	}
-		// });
-		// if (advanceTurn) {
-		// 	game.advanceTurn();
-		// }
 
 		game.save(function (err) {
 			if (err)

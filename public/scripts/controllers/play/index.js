@@ -120,8 +120,8 @@ angular.module('cardapp')
 
 		init();
 
-		socket.on('userjoin', function (msg) {
-			console.log(msg);
+		socket.on('user join', function () {
+			update();
 		});
 
 		socket.on('advance turn', function () {

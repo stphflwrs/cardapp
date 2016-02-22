@@ -4,6 +4,10 @@
 	color: white;
 }
 
+.playfield-self {
+	color: black;
+}
+
 .playfield-opponents {
 	color: black;
 }
