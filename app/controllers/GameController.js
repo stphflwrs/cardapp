@@ -383,6 +383,43 @@ function isLoggedIn(req, res, next) {
 		return res.status(401).send({ status: "Not logged in." });
 }
 
+function inGame(req, res, next) {
+	Game.findById(req.params.game_id).exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
+
+		if (!game)
+			return res.status(404).json({ status: "Game not found." });
+
+		var output = false;
+		game.players.forEach(function (player) {
+			if (player.user.equals(req.user._id)) {
+				output = true;
+			}
+		});
+
+		if (output == true)
+			return next();
+		else
+			return res.status(401).send({ status: "Not in game." });
+	});
+}
+
+function canJoin(req, res, next) {
+	Game.findById(req.params.game_id).exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
+
+		if (!game)
+			return res.status(404).json({ status: "Game not found." });
+
+		if (game.current_round <= 0 && game.players.length + game.ai_players.length < game.max_players)
+			return next();
+		else
+			return res.status(401).json({ status: "Game is full or has started already." });
+	});
+}
+
 // Routes
 // ======
 
@@ -391,12 +428,11 @@ router.post('/create', isLoggedIn, postGame);
 router.get('/retrieve/:game_id', getGame);
 router.delete('/delete/:game_id', deleteGame);
 
-router.post('/join/:game_id', isLoggedIn, joinGame);
-router.post('/addai/:game_id', addAIPlayer);
-router.post('/start/:game_id', startGame);
+router.post('/join/:game_id', isLoggedIn, canJoin, joinGame);
+router.post('/addai/:game_id', isLoggedIn, inGame, canJoin, addAIPlayer);
+router.post('/start/:game_id', isLoggedIn, inGame, startGame);
 
 router.get('/get_self/:game_id', isLoggedIn, getSelf);
 router.get('/get_opponents/:game_id', isLoggedIn, getOpponents);
 router.get('/get_players/:game_id', getPlayers);
 router.post('/set_card/:game_id', isLoggedIn, setCard);
-// router.post('/advance_turn/:game_id', isLoggedIn, advanceTurn);

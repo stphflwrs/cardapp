@@ -135,6 +135,7 @@ GameSchema.methods.advanceRound = function () {
 GameSchema.methods.updateScores = function () {
 	var game = this;
 
+	var roundData = {};
 	game.players.forEach(function (player, index) {
 		var playerData = {};
 		player.played_cards.forEach(function (card, index) {
@@ -213,15 +214,63 @@ GameSchema.methods.updateScores = function () {
 					}
 				}
 				else if (cardValue.method == "most") {
-					if (!playerData.most) {
-						playerData.most = {};
+					if (!roundData.most) {
+						roundData.most = {};
 					}
 
-					
+					if (!roundData.most[player.user._id]) {
+						roundData.most[player.user._id] = {};
+					}
+
+					// Assign points
+					if (!roundData.most[player.user._id][cardValue.params[0]]) {
+						roundData.most[player.user._id][cardValue.params[0]] = parseInt(cardValue.params[1]);
+					}
+					else {
+						roundData.most[player.user._id][cardValue.params[0]] += parseInt(cardValue.params[1]);
+					}
+
 				}
 			}
 		});
 	});
+
+	// Check for having the most points in category "most"
+	// - Track player(s) who have the most and second most
+	// - Check if someone has equal points or more points to player(s) who have the most
+	// --- If equal, concat with player list
+	// --- If more, replace list with just that player, then assign old list to second most
+	// --- If less, check if equal with second most list
+	// - If current player in the list, assign points / size of that list (floored)
+	// - If second most list >= 1 and most list == 1, assign second most points / size of that list (floored)
+	// var firstMost = {};
+	// var secondMost = {};
+
+	// // Find player with least score first
+	// var leastPlayer = undefined;
+	// for (var currentPlayer in roundData.most) {
+	// 	if (!leastPlayer) {
+	// 		leastPlayer = currentPlayer;
+	// 	}
+	// 	else {
+	// 		if (roundData.most[currentPlayer]["maki"] < roundData.most[leastPlayer]["maki"]) {
+	// 			leastPlayer = currentPlayer;
+	// 		}
+	// 	}
+	// }
+
+	// // Now check for most
+	// firstMost[leastPlayer] = roundData.most[leastPlayer]["maki"];
+	// for (var currentPlayer in roundData.most) {
+	// 	var someFirstPlayer = Object.keys(firstMost)[0];
+	// 	if (roundData.most[currentPlayer]["maki"] == roundData.most[someFirstPlayer]["maki"]) {
+	// 		firstMost[currentPlayer] = roundData.most[currentPlayer]["maki"];
+	// 	}
+	// 	else if (roundData.most[currentPlayer]["maki"] > roundData.most[someFirstPlayer]["maki"]) {
+			
+	// 	}
+	// }
+
 };
 
 module.exports = mongoose.model('Game', GameSchema);

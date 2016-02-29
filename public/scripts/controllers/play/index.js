@@ -1,6 +1,10 @@
+'use strict';
+
 angular.module('cardapp')
 	.controller('PlayCtrl', function ($scope, $stateParams, $q, UsersService, GamesService) {
 		$scope.loggedIn = false;
+		$scope.inGame = false;
+		$scope.gameStarted = false;
 		$scope.user = {};
 
 		$scope.gameTitle = undefined;
@@ -11,6 +15,16 @@ angular.module('cardapp')
 		$scope.opponents = [];
 
 		var socket = undefined;
+
+		$scope.joinGame = function () {
+			GamesService.joinGame($stateParams.game_id).then(
+				function successCallback(data) {
+					update();
+				},
+				function errorCallback(data) {
+					console.log(data);
+				});
+		};
 
 		$scope.addAIPlayer = function () {
 			GamesService.addAIPlayer($stateParams.game_id).then(
@@ -46,13 +60,18 @@ angular.module('cardapp')
 		};
 
 		var update = function () {
-			$q.all([
-				GamesService.retrieveSelf($stateParams.game_id),
-				GamesService.retrieveOpponents($stateParams.game_id)
-			]).then(
+			var promises = [];
+			promises.push(GamesService.retrieveOpponents($stateParams.game_id));
+			if ($scope.inGame) {
+				promises.push(GamesService.retrieveSelf($stateParams.game_id));
+			}
+
+			$q.all(promises).then(
 				function successCallback(data) {
-					$scope.player = data[0];
-					$scope.opponents = data[1];
+					$scope.opponents = data[0];
+					if ($scope.inGame) {
+						$scope.player = data[1];
+					}
 				},
 				function errorCallback(data) {
 					console.log(data);
@@ -79,8 +98,18 @@ angular.module('cardapp')
 					function successCallback(data) {
 						$scope.gameTitle = data.title;
 						$scope.deckTitle = data.deck_title;
-						$scope.players = data.players;
-						if ($scope.loggedIn) {
+						if (data.current_round > 0) {
+							$scope.gameStarted = true;
+						}
+
+						// Check if a player is in game
+						data.players.forEach(function (player) {
+							if (player.user._id == $scope.user._id) {
+								$scope.inGame = true;
+							}
+						});
+
+						if ($scope.inGame) {
 							fetchPlayers(false);
 						}
 						else {
