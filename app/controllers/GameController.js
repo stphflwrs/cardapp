@@ -343,15 +343,39 @@ var setCard = function (req, res) {
 				advanceTurn = false;
 			}
 		});
+
+		// Update score if turn advancing
 		if (advanceTurn) {
 			game.advanceTurn();
 
 			game.players.forEach(function (player) {
-				player.score = Game.calculateScore(player.played_cards);
+				// Determine players cards other than self
+				var othersCards = [];
+				game.players.forEach(function (player_) {
+					if (!player_._id.equals(player._id)) {
+						othersCards.push(player_.played_cards);
+					}
+				});
+				game.ai_players.forEach(function (aiPlayer) {
+					othersCards.push(aiPlayer.played_cards);
+				});
+
+				player.score = Game.calculateScore(player.played_cards, othersCards);
 			});
 
-			game.ai_players.forEach(function (player) {
-				player.score = Game.calculateScore(player.played_cards);
+			game.ai_players.forEach(function (aiPlayer) {
+				// Determine AI Players cards other than self (aware?)
+				var othersCards = [];
+				game.players.forEach(function (player) {
+					othersCards.push(player.played_cards);
+				});
+				game.ai_players.forEach(function (aiPlayer_) {
+					if (!aiPlayer_._id.equals(aiPlayer._id)) {
+						othersCards.push(aiPlayer_.played_cards);
+					}
+				});
+
+				aiPlayer.score = Game.calculateScore(aiPlayer.played_cards, othersCards);
 			});
 		}
 
