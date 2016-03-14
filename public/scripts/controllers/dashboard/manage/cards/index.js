@@ -1,10 +1,26 @@
+'use strict';
+
+/**
+ * @ngdoc function
+ * @name cardapp.controller:CardsCtrl
+ * @description
+ * # CardsCtrl
+ * Controller of the cardapp
+ */
 angular.module('cardapp')
-	.controller('CardsCtrl', function($scope, CardsService) {
+	.controller('CardsCtrl', function ($scope, CardsService) {
+		// Allows view to be hidden while loading
 		$scope.display = false;
 
+		// Scope variables
+		// ---
 		$scope.cards = [];
 
-		$scope.deleteCard = function(cardNumber) {
+		// Scope methods
+		// ---
+		$scope.deleteCard = function (cardNumber) {
+			// * DOES NOT ASK FOR CONFIRMATION *
+
 			var cardID = $scope.cards[cardNumber]._id;
 			CardsService.deleteCard(cardID).then(
 				function successCallback(data) {
@@ -15,7 +31,9 @@ angular.module('cardapp')
 				});
 		};
 
-		var init = function() {
+		// Private methods
+		// ---
+		var init = function () {
 			CardsService.retrieveCards().then(
 				function successCallback(data) {
 					$scope.cards = data;
@@ -25,5 +43,6 @@ angular.module('cardapp')
 				});
 		};
 
+		// Run it!
 		init();
 	});

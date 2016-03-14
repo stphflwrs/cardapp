@@ -1,5 +1,12 @@
 'use strict';
 
+/**
+ * @ngdoc function
+ * @name cardapp.controller:RegisterCtrl
+ * @description
+ * # RegisterCtrl
+ * Controller of the cardapp
+ */
 angular.module('cardapp')
 	.controller('RegisterCtrl', function ($scope, $state, UsersService) {
 		$scope.username = undefined;

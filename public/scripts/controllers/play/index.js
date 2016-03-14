@@ -1,7 +1,19 @@
 'use strict';
 
+/**
+ * @ngdoc function
+ * @name cardapp.controller:PlayCtrl
+ * @description
+ * # PlayCtrl
+ * Controller of the cardapp
+ */
 angular.module('cardapp')
 	.controller('PlayCtrl', function ($scope, $stateParams, $q, UsersService, GamesService) {
+		// Allows view to be hidden while loading
+		$scope.display = false;
+
+		// Scope variables
+		// ---
 		$scope.loggedIn = false;
 		$scope.inGame = false;
 		$scope.gameStarted = false;
@@ -14,8 +26,13 @@ angular.module('cardapp')
 		$scope.player = [];
 		$scope.opponents = [];
 
+		// Private variables
+		// ---
 		var socket = undefined;
 
+		// Scope methods
+		// ---
+		// Adds currently logged in user to game (if not full)
 		$scope.joinGame = function () {
 			GamesService.joinGame($stateParams.game_id).then(
 				function successCallback(data) {
@@ -26,6 +43,7 @@ angular.module('cardapp')
 				});
 		};
 
+		// Adds AI to game if logged in user is in game
 		$scope.addAIPlayer = function () {
 			GamesService.addAIPlayer($stateParams.game_id).then(
 				function successCallback(data) {
@@ -36,6 +54,7 @@ angular.module('cardapp')
 				});
 		};
 
+		// Begins game if user who initiated is in the game
 		$scope.startGame = function () {
 			GamesService.startGame($stateParams.game_id).then(
 				function successCallback(data) {
@@ -46,6 +65,7 @@ angular.module('cardapp')
 				});
 		};
 
+		// Sets the selected card of a user in game
 		$scope.selectCard = function (cardIndex) {
 			if (!$scope.player.selected_card) {
 				GamesService.setCard($stateParams.game_id, cardIndex).then(
@@ -59,6 +79,9 @@ angular.module('cardapp')
 			}
 		};
 
+		// Private methods
+		// ---
+		// Refresh all game data
 		var update = function () {
 			var promises = [];
 			promises.push(GamesService.retrieveOpponents($stateParams.game_id));
@@ -147,8 +170,11 @@ angular.module('cardapp')
 			};
 		};
 
+		// Run it!
 		init();
 
+		// Socket.IO events
+		// ---
 		socket.on('user join', function () {
 			update();
 		});

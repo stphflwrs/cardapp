@@ -1,13 +1,28 @@
+'use strict';
+
+/**
+ * @ngdoc function
+ * @name cardapp.controller:GamesCreateCtrl
+ * @description
+ * # GamesCreateCtrl
+ * Controller of the cardapp
+ */
 angular.module('cardapp')
 	.controller('GamesCreateCtrl', function ($scope, $state, GamesService, DeckTypesService) {
+		// Allows view to be hidden while loading
+		$scope.display = false;
 
+		// Scope variables
+		// ---
 		$scope.deckTypes = [];
-
 		$scope.gameTitle = undefined;
 		$scope.selectedDeckType = {};
-
 		$scope.errors = {};
 
+
+		// Scope methods
+		// ---
+		// Sets the deck for the game being created
 		$scope.setDeckType = function (deckType) {
 			DeckTypesService.retrieveDeckType(deckType._id).then(
 				function successCallback(data) {
@@ -37,6 +52,10 @@ angular.module('cardapp')
 				});
 		};
 
+
+		// Private methods
+		// ---
+		// Client side validation
 		var validate = function () {
 			$scope.errors = {
 				errors: false
@@ -70,5 +89,6 @@ angular.module('cardapp')
 				});
 		};
 
+		// Run it!
 		init();
 	});

@@ -70,11 +70,11 @@ GameSchema.methods.advanceTurn = function () {
 
 	// Move selected card to played cards
 	game.players.forEach(function (player, index, array) {
-		player.played_cards.push(player.selected_card);
+		player.played_cards = player.played_cards.concat(player.selected_card);
 		player.selected_card = undefined;
 	});
 	game.ai_players.forEach(function (aiPlayer, index, array) {
-		aiPlayer.played_cards.push(aiPlayer.selected_card);
+		aiPlayer.played_cards = aiPlayer.played_cards.concat(aiPlayer.selected_card);
 		aiPlayer.selected_card = undefined;
 	});
 
@@ -132,145 +132,271 @@ GameSchema.methods.advanceRound = function () {
 	}
 };
 
-GameSchema.methods.updateScores = function () {
-	var game = this;
+GameSchema.statics.calculateScore = function (playerCards, opponentCards) {
+	// Calculates the points earned from set scoring cards of a label "setLabel"
+	var calcSet = function (setLabel, cards) {
+		var output = {
+			points: 0,
+			touchedCards: []
+		};
 
-	var roundData = {};
-	game.players.forEach(function (player, index) {
-		var playerData = {};
-		player.played_cards.forEach(function (card, index) {
-			var cardValueParams = card.value.split(":");
-			var cardValue = {
-				period: cardValueParams[0],
-				method: cardValueParams[1],
-				params: cardValueParams.slice(2)
-			};
+		var setCards = 0;
+		cards.forEach(function (card, index) {
+			var params = card.value.split(":"),
+				method = params[1];
 
-			if (cardValue.period == "round") {
-				if (cardValue.method == "set") {
-					// Initialize set data if necessary
-					if (!playerData.sets) {
-						playerData.sets = {};
-					}
+			// We only care about sets
+			if (method == "set") {
 
-					// Adds card to set or initializes
-					if (!playerData.sets[cardValue.params[0]]) {
-						playerData.sets[cardValue.params[0]] = 1;
-					}
-					else {
-						playerData.sets[cardValue.params[0]] += 1;
-					}
+				var label = params[2],
+					setSize = params[3],
+					points = params[4];
 
-					// Checks for a completed set
-					if (playerData.sets[cardValue.params[0]] == cardValue.params[1]) {
-						playerData.sets[cardValue.params[0]] = 0;
-						player.score += parseInt(cardValue.params[2]);
-					}
-				}
-				else if (cardValue.method == "tripler") {
-					// Initialize tripler data if necessary
-					if (!playerData.tripler) {
-						playerData.tripler = {};
+				// We only care about a specific label
+				if (label == setLabel) {
+					setCards += 1;
+
+					if (setCards == setSize) {
+						output.points += parseInt(points);
+						setCards = 0;
 					}
 
-					playerData.tripler[cardValue.params[0]] = 1;
-					player.score += parseInt(cardValue.params[1]);
-				}
-				else if (cardValue.method == "tripleafter") {
-					if (playerData.tripler) {
-						if (playerData.tripler[cardValue.params[0]]) {
-							player.score += parseInt(cardValue.params[1]) * 3;
-							delete playerData.tripler[cardValue.params[0]];
-						}
-						else {
-							player.score += parseInt(cardValue.params[1]);
-						}
-					}
-					else {
-						player.score += parseInt(cardValue.params[1]);
-					}
-				}
-				else if (cardValue.method == "count") {
-					if (!playerData.count) {
-						playerData.count = {};
-					}
-
-					// Add card to counts
-					if (!playerData.count[cardValue.params[0]]) {
-						playerData.count[cardValue.params[0]] = 1;
-					}
-					else {
-						playerData.count[cardValue.params[0]] += 1;
-					}
-
-					if (playerData.count[cardValue.params[0]] < cardValue.params.length - 1) {
-						console.log("Score value for " + playerData.count[cardValue.params[0]]);
-						player.score -= parseInt(cardValue.params[playerData.count[cardValue.params[0]] - 1]);
-						player.score += parseInt(cardValue.params[playerData.count[cardValue.params[0]]]);
-					}
-					else if (playerData.count[cardValue.params[0]] == cardValue.params.length - 1) {
-						player.score += parseInt(cardValue.params[cardValue.params.length - 2]);
-						player.score += parseInt(cardValue.params[cardValue.params.length - 1]);
-					}
-				}
-				else if (cardValue.method == "most") {
-					if (!roundData.most) {
-						roundData.most = {};
-					}
-
-					if (!roundData.most[player.user._id]) {
-						roundData.most[player.user._id] = {};
-					}
-
-					// Assign points
-					if (!roundData.most[player.user._id][cardValue.params[0]]) {
-						roundData.most[player.user._id][cardValue.params[0]] = parseInt(cardValue.params[1]);
-					}
-					else {
-						roundData.most[player.user._id][cardValue.params[0]] += parseInt(cardValue.params[1]);
-					}
-
+					output.touchedCards.push(index);
 				}
 			}
 		});
-	});
 
-	// Check for having the most points in category "most"
-	// - Track player(s) who have the most and second most
-	// - Check if someone has equal points or more points to player(s) who have the most
-	// --- If equal, concat with player list
-	// --- If more, replace list with just that player, then assign old list to second most
-	// --- If less, check if equal with second most list
-	// - If current player in the list, assign points / size of that list (floored)
-	// - If second most list >= 1 and most list == 1, assign second most points / size of that list (floored)
-	// var firstMost = {};
-	// var secondMost = {};
+		return output;
+	};
 
-	// // Find player with least score first
-	// var leastPlayer = undefined;
-	// for (var currentPlayer in roundData.most) {
-	// 	if (!leastPlayer) {
-	// 		leastPlayer = currentPlayer;
-	// 	}
-	// 	else {
-	// 		if (roundData.most[currentPlayer]["maki"] < roundData.most[leastPlayer]["maki"]) {
-	// 			leastPlayer = currentPlayer;
-	// 		}
-	// 	}
-	// }
+	// Calculates the points earned from count scoring cards of a label "countLabel"
+	var calcCount = function (countLabel, cards) {
+		var output = {
+			points: 0,
+			touchedCards: []
+		};
 
-	// // Now check for most
-	// firstMost[leastPlayer] = roundData.most[leastPlayer]["maki"];
-	// for (var currentPlayer in roundData.most) {
-	// 	var someFirstPlayer = Object.keys(firstMost)[0];
-	// 	if (roundData.most[currentPlayer]["maki"] == roundData.most[someFirstPlayer]["maki"]) {
-	// 		firstMost[currentPlayer] = roundData.most[currentPlayer]["maki"];
-	// 	}
-	// 	else if (roundData.most[currentPlayer]["maki"] > roundData.most[someFirstPlayer]["maki"]) {
-			
-	// 	}
-	// }
+		var countCards = 0;
+		cards.forEach(function (card, index) {
+			var params = card.value.split(":"),
+				method = params[1];
 
+			// We only care about counts
+			if (method == "count") {
+				var label = params[2],
+					countValues = params.slice(3);
+
+				// We only care about a specific label
+				if (label == countLabel) {
+					countCards += 1;
+					if (countCards < countValues.length) {
+						output.points = parseInt(countValues[countCards - 1]);
+					}
+					else {
+						output.points = parseInt(countValues[countValues.length - 1]);
+					}
+
+					output.touchedCards.push(index);
+				}
+			}
+		});
+
+		return output;
+	};
+
+	var calcTripleAfter = function (triplerLabel, cards) {
+		var output = {
+			points: 0,
+			touchedCards: []
+		};
+
+		var triplerCards = 0;
+		cards.forEach(function (card, index) {
+			var params = card.value.split(":"),
+				method = params[1];
+
+			// We only care about triplers and tripleafters
+			if (method == "tripler") {
+				var label = params[2];
+
+				// Keep track of number of triplers in play
+				if (label == triplerLabel) {
+					triplerCards += 1;
+					output.touchedCards.push(index);
+				}
+			}
+			else if (method == "tripleafter") {
+				var label = params[2],
+					points = params[3];
+
+				// If triplers in play, apply the triple. Otherwise score without
+				if (label == triplerLabel) {
+					if (triplerCards > 0) {
+						output.points += parseInt(points) * 3;
+						triplerCards -= 1;
+					}
+					else {
+						output.points += parseInt(points);
+					}
+
+					output.touchedCards.push(index);
+				}
+			}
+		});
+
+		return output;
+	};
+
+	// Actual non-function stuff here!!!
+	var score = 0;
+	score += calcSet("tempura", playerCards).points;
+	score += calcSet("sashimi", playerCards).points;
+	score += calcCount("dumpling", playerCards).points;
+	score += calcTripleAfter("wasabi", playerCards).points;
+
+	console.log(score);
+	return score;
 };
+
+// GameSchema.methods.updateScores = function () {
+// 	var game = this;
+
+// 	var roundData = {};
+// 	game.players.forEach(function (player, index) {
+// 		var playerData = {};
+// 		player.played_cards.forEach(function (card, index) {
+// 			var cardValueParams = card.value.split(":");
+// 			var cardValue = {
+// 				period: cardValueParams[0],
+// 				method: cardValueParams[1],
+// 				params: cardValueParams.slice(2)
+// 			};
+
+// 			if (cardValue.period == "round") {
+// 				if (cardValue.method == "set") {
+// 					// Initialize set data if necessary
+// 					if (!playerData.sets) {
+// 						playerData.sets = {};
+// 					}
+
+// 					// Adds card to set or initializes
+// 					if (!playerData.sets[cardValue.params[0]]) {
+// 						playerData.sets[cardValue.params[0]] = 1;
+// 					}
+// 					else {
+// 						playerData.sets[cardValue.params[0]] += 1;
+// 					}
+
+// 					// Checks for a completed set
+// 					if (playerData.sets[cardValue.params[0]] == cardValue.params[1]) {
+// 						playerData.sets[cardValue.params[0]] = 0;
+// 						player.score += parseInt(cardValue.params[2]);
+// 					}
+// 				}
+// 				else if (cardValue.method == "tripler") {
+// 					// Initialize tripler data if necessary
+// 					if (!playerData.tripler) {
+// 						playerData.tripler = {};
+// 					}
+
+// 					playerData.tripler[cardValue.params[0]] = 1;
+// 					player.score += parseInt(cardValue.params[1]);
+// 				}
+// 				else if (cardValue.method == "tripleafter") {
+// 					if (playerData.tripler) {
+// 						if (playerData.tripler[cardValue.params[0]]) {
+// 							player.score += parseInt(cardValue.params[1]) * 3;
+// 							delete playerData.tripler[cardValue.params[0]];
+// 						}
+// 						else {
+// 							player.score += parseInt(cardValue.params[1]);
+// 						}
+// 					}
+// 					else {
+// 						player.score += parseInt(cardValue.params[1]);
+// 					}
+// 				}
+// 				else if (cardValue.method == "count") {
+// 					if (!playerData.count) {
+// 						playerData.count = {};
+// 					}
+
+// 					// Add card to counts
+// 					if (!playerData.count[cardValue.params[0]]) {
+// 						playerData.count[cardValue.params[0]] = 1;
+// 					}
+// 					else {
+// 						playerData.count[cardValue.params[0]] += 1;
+// 					}
+
+// 					if (playerData.count[cardValue.params[0]] < cardValue.params.length - 1) {
+// 						console.log("Score value for " + playerData.count[cardValue.params[0]]);
+// 						player.score -= parseInt(cardValue.params[playerData.count[cardValue.params[0]] - 1]);
+// 						player.score += parseInt(cardValue.params[playerData.count[cardValue.params[0]]]);
+// 					}
+// 					else if (playerData.count[cardValue.params[0]] == cardValue.params.length - 1) {
+// 						player.score += parseInt(cardValue.params[cardValue.params.length - 2]);
+// 						player.score += parseInt(cardValue.params[cardValue.params.length - 1]);
+// 					}
+// 				}
+// 				else if (cardValue.method == "most") {
+// 					if (!roundData.most) {
+// 						roundData.most = {};
+// 					}
+
+// 					if (!roundData.most[player.user._id]) {
+// 						roundData.most[player.user._id] = {};
+// 					}
+
+// 					// Assign points
+// 					if (!roundData.most[player.user._id][cardValue.params[0]]) {
+// 						roundData.most[player.user._id][cardValue.params[0]] = parseInt(cardValue.params[1]);
+// 					}
+// 					else {
+// 						roundData.most[player.user._id][cardValue.params[0]] += parseInt(cardValue.params[1]);
+// 					}
+
+// 				}
+// 			}
+// 		});
+// 	});
+
+// 	// Check for having the most points in category "most"
+// 	// - Track player(s) who have the most and second most
+// 	// - Check if someone has equal points or more points to player(s) who have the most
+// 	// --- If equal, concat with player list
+// 	// --- If more, replace list with just that player, then assign old list to second most
+// 	// --- If less, check if equal with second most list
+// 	// - If current player in the list, assign points / size of that list (floored)
+// 	// - If second most list >= 1 and most list == 1, assign second most points / size of that list (floored)
+// 	// var firstMost = {};
+// 	// var secondMost = {};
+
+// 	// // Find player with least score first
+// 	// var leastPlayer = undefined;
+// 	// for (var currentPlayer in roundData.most) {
+// 	// 	if (!leastPlayer) {
+// 	// 		leastPlayer = currentPlayer;
+// 	// 	}
+// 	// 	else {
+// 	// 		if (roundData.most[currentPlayer]["maki"] < roundData.most[leastPlayer]["maki"]) {
+// 	// 			leastPlayer = currentPlayer;
+// 	// 		}
+// 	// 	}
+// 	// }
+
+// 	// // Now check for most
+// 	// firstMost[leastPlayer] = roundData.most[leastPlayer]["maki"];
+// 	// for (var currentPlayer in roundData.most) {
+// 	// 	var someFirstPlayer = Object.keys(firstMost)[0];
+// 	// 	if (roundData.most[currentPlayer]["maki"] == roundData.most[someFirstPlayer]["maki"]) {
+// 	// 		firstMost[currentPlayer] = roundData.most[currentPlayer]["maki"];
+// 	// 	}
+// 	// 	else if (roundData.most[currentPlayer]["maki"] > roundData.most[someFirstPlayer]["maki"]) {
+			
+// 	// 	}
+// 	// }
+
+// };
 
 module.exports = mongoose.model('Game', GameSchema);

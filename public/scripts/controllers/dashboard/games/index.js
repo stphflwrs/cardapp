@@ -1,9 +1,23 @@
+'use strict';
+
+/**
+ * @ngdoc function
+ * @name cardapp.controller:GamesCtrl
+ * @description
+ * # GamesCtrl
+ * Controller of the cardapp
+ */
 angular.module('cardapp')
 	.controller('GamesCtrl', function ($scope, $state, GamesService, UsersService) {
+		// Allows view to be hidden while loading
 		$scope.display = true;
 
+		// Scope variables
+		// ---
 		$scope.games = [];
 
+		// Scope methods
+		// ---
 		$scope.join = function (gameID) {
 			GamesService.joinGame(gameID).then(
 				function successCallback(data) {
@@ -14,6 +28,8 @@ angular.module('cardapp')
 				});
 		};
 
+		// Private methods
+		// ---
 		var init = function () {
 			GamesService.retrieveGames().then(
 				function successCallback(data) {
@@ -36,5 +52,6 @@ angular.module('cardapp')
 				});
 		};
 
+		// Run it!
 		init();
 	});
