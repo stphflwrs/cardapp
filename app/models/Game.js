@@ -8,6 +8,8 @@ var GameSchema = new Schema({
 		hand			: [{type: Schema.ObjectId, ref: 'Card'}],
 		selected_card	: {type: Schema.ObjectId, ref: 'Card'},
 		played_cards	: [{type: Schema.ObjectId, ref: 'Card'}],
+		game_cards		: [{type: Schema.ObjectId, ref: 'Card'}],
+		game_score		: {type: Number, default: 0},
 		score			: {type: Number, default: 0}
 	}],
 	ai_players		: [{
@@ -15,6 +17,8 @@ var GameSchema = new Schema({
 		hand			: [{type: Schema.ObjectId, ref: 'Card'}],
 		selected_card	: {type: Schema.ObjectId, ref: 'Card'},
 		played_cards	: [{type: Schema.ObjectId, ref: 'Card'}],
+		game_cards		: [{type: Schema.ObjectId, ref: 'Card'}],
+		game_score		: {type: Number, default: 0},
 		score			: {type: Number, default: 0}
 	}],
 	hand_size		: {type: Number, default: 10},
@@ -119,10 +123,32 @@ GameSchema.methods.advanceRound = function () {
 	var game = this;
 	// Empty played cards
 	game.players.forEach(function (player, index, array) {
+		player.played_cards.forEach(function (card) {
+			// Move game scoring cards out
+			var scoreType = card.value.split(":")[0];
+
+			if (scoreType == "game") {
+				player.game_cards = player.game_cards.concat(card);
+			}
+		});
+
 		player.played_cards = [];
+		player.game_score += player.score;
+		player.score = 0;
 	});
 	game.ai_players.forEach(function (aiPlayer) {
+		aiPlayer.played_cards.forEach(function (card) {
+			// Move game scoring cards out
+			var scoreType = card.value.split(":")[0];
+
+			if (scoreType == "game") {
+				aiPlayer.game_cards = aiPlayer.game_cards.concat(card);
+			}
+		});
+
 		aiPlayer.played_cards = [];
+		aiPlayer.game_score += aiPlayer.score;
+		aiPlayer.score = 0;
 	});
 
 	// Check if last round
@@ -132,7 +158,7 @@ GameSchema.methods.advanceRound = function () {
 	}
 };
 
-GameSchema.statics.calculateScore = function (playerCards, othersCards) {
+GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver) {
 	// Calculates the points earned from set scoring cards of a label "setLabel"
 	var calcSet = function (setLabel, cards) {
 		var output = {
@@ -365,6 +391,113 @@ GameSchema.statics.calculateScore = function (playerCards, othersCards) {
 		return output;
 	};
 
+	var calcMostLeast = function (mostLeastLabel, cards, opponentsCards, defaultMostPoints, defaultLeastPoints) {
+		var output = {
+			points: 0,
+			touchedCards: []
+		};
+
+		var mostPoints = 0;
+		var leastPoints = 0;
+
+		// If parameters are preset, do this
+		if (defaultMostPoints) mostPoints = defaultMostPoints;
+		if (defaultLeastPoints) leastPoints = defaultLeastPoints;
+
+		var myTotal = 0;
+
+		// Check out my own cards
+		cards.forEach(function (card, index) {
+			var params = card.value.split(":"),
+				method = params[1];
+
+			// Only care about mosts
+			if (method == "mostleast") {
+				var label = params[2];
+
+				if (label == mostLeastLabel) {
+					myTotal += 1;
+
+					output.touchedCards.push(index);
+				}
+			}
+		});
+
+		var theirTotals = [];
+
+		// Check out their cards
+		opponentsCards.forEach(function (opponentCards) {
+
+			var opponentTotal = 0;
+			opponentCards.forEach(function (card) {
+				var params = card.value.split(":"),
+					method = params[1];
+
+				if (method == "mostleast") {
+					var label = params[2];
+
+					if (label == mostLeastLabel) {
+						opponentTotal += 1;
+					}
+				}
+			});
+
+			theirTotals.push(opponentTotal);
+		});
+
+		// Sort ASC
+		theirTotals.sort();
+
+		// Determine points
+		// If I have the most:
+		if (myTotal > theirTotals[theirTotals.length - 1]) {
+			output.points = mostPoints;
+		}
+		// If I tied for most:
+		else if (myTotal == theirTotals[theirTotals.length - 1]) {
+			var numWinners = 2;
+
+			// Determine how many ties
+			for (var i = theirTotals.length - 2; i >= 0; i--) {
+				if (myTotal	== theirTotals[i]) {
+					numWinners++;
+					continue;
+				}
+				else {
+					break;
+				}
+			}
+
+			// Only award points if not everyone has same amount
+			if (numWinners != theirTotals.length + 1) {
+				output.points = Math.floor(mostPoints / numWinners);
+			}
+		}
+		// If I have the least ;-;:
+		else if (myTotal < theirTotals[0]) {
+			output.points = leastPoints;
+		}
+		// If I tied for the least:
+		else if (myTotal == theirTotals[0]) {
+			var numLosers = 2;
+
+			// Determine how many ties
+			for (var i = 1; i < theirTotals.length; i++) {
+				if (myTotal == theirTotals[i]) {
+					numLosers++;
+					continue;
+				}
+				else {
+					break;
+				}
+			}
+
+			output.points = Math.flor(leastPoints / numLosers);
+		}
+
+		return output;
+	};
+
 	// Actual non-function stuff here!!!
 	var score = 0;
 	score += calcSet("tempura", playerCards).points;
@@ -373,6 +506,10 @@ GameSchema.statics.calculateScore = function (playerCards, othersCards) {
 	score += calcTripleAfter("wasabi", playerCards).points;
 	if (othersCards) {
 		score += calcMost("maki", playerCards, othersCards).points;
+	}
+
+	if (gameOver) {
+		score += calcMostLeast("pudding", playerCards, othersCards).points;
 	}
 
 	return score;

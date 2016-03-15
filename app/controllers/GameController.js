@@ -304,6 +304,9 @@ var setCard = function (req, res) {
 			path: 'played_cards',
 			model: 'Card'
 		},{
+			path: 'game_cards',
+			model: 'Card'
+		},{
 			path: 'selected_card',
 			model: 'Card'
 		}]
@@ -317,6 +320,9 @@ var setCard = function (req, res) {
 			model: 'Card'
 		},{
 			path: 'played_cards',
+			model: 'Card'
+		},{
+			path: 'game_cards',
 			model: 'Card'
 		},{
 			path: 'selected_card',
@@ -390,7 +396,42 @@ var setCard = function (req, res) {
 				advanceRound = false;
 			}
 		});
-		if (advanceRound) game.advanceRound();
+		if (advanceRound) {
+			game.advanceRound();
+
+			// Only calculate after last turn
+			if (game.current_round > game.max_rounds) {
+				game.players.forEach(function (player) {
+					// Determine players cards other than self
+					var othersCards = [];
+					game.players.forEach(function (player_) {
+						if (!player_._id.equals(player._id)) {
+							othersCards.push(player_.game_cards);
+						}
+					});
+					game.ai_players.forEach(function (aiPlayer) {
+						othersCards.push(aiPlayer.game_cards);
+					});
+
+					player.game_score += Game.calculateScore(player.played_cards, othersCards, true);
+				});
+
+				game.ai_players.forEach(function (aiPlayer) {
+					// Determine AI Players cards other than self (aware?)
+					var othersCards = [];
+					game.players.forEach(function (player) {
+						othersCards.push(player.game_cards);
+					});
+					game.ai_players.forEach(function (aiPlayer_) {
+						if (!aiPlayer_._id.equals(aiPlayer._id)) {
+							othersCards.push(aiPlayer_.game_cards);
+						}
+					});
+
+					aiPlayer.game_score += Game.calculateScore(aiPlayer.played_cards, othersCards, true);
+				});
+			}
+		}
 
 		game.save(function (err) {
 			if (err)
