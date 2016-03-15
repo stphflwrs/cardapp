@@ -338,7 +338,10 @@ GameSchema.statics.calculateScore = function (playerCards, othersCards) {
 			}
 			// No tie, check if I got second:
 			else if (!theirTotals[1] || myTotal > theirTotals[1]) {
+				console.log("I should be here atm");
 				output.points = parseInt(secondMostPoints);
+				console.log(secondMostPoints);
+				console.log(output.points);
 			}
 			// Tied for second:
 			else if (myTotal == theirTotals[1]) {
@@ -369,7 +372,7 @@ GameSchema.statics.calculateScore = function (playerCards, othersCards) {
 	score += calcCount("dumpling", playerCards).points;
 	score += calcTripleAfter("wasabi", playerCards).points;
 	if (othersCards) {
-		score += calcMost("maki", playerCards, othersCards);
+		score += calcMost("maki", playerCards, othersCards).points;
 	}
 
 	return score;
