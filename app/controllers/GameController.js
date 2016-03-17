@@ -336,7 +336,12 @@ var setCard = function (req, res) {
 			return res.status(404).json({status: "Game not found."});
 
 		// Update selected_card for the currently logged in player
-		game.playCard(req.user._id, req.body.card_index);
+		if (req.body.swapper_index) {
+			game.playCard(req.user._id, req.body.card_index, req.body.swapper_index, req.body.other_card_index);
+		}
+		else {
+			game.playCard(req.user._id, req.body.card_index);
+		}
 
 		var advanceTurn = true;
 		game.players.forEach(function (player) {
@@ -492,6 +497,43 @@ function canJoin(req, res, next) {
 	});
 }
 
+function canPlay(req, res, next) {
+	Game.findById(req.params.game_id).populate('players.user players.hand').exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
+
+		if (!game)
+			return res.status(404).json({ status: "Game not found." });
+
+		// Assumes already in game
+
+		// Find player
+		var player = undefined;
+		for (var i = 0; i < game.players.length; i++) {
+			if (game.players[i].user._id.equals(req.user._id)) {
+				player = game.players[i];
+				break;
+			}
+		}
+
+		// Check card_index is valid
+		var cardIndex = req.body.card_index
+		if (cardIndex < 0 || cardIndex >= player.hand.length) {
+			return res.status(400).json({ status: "Index out of range." });
+		}
+
+		// Check if they can play a swapper card
+		if (req.body.swapper_index) {
+			var swapperIndex = req.body.swapper_index;
+			if (!player.hand[swapperIndex].value.split()[1] == "swapper") {
+				return res.status(400).json({ status: "Invalid move." });
+			}
+		}
+
+		return next();
+	});
+}
+
 // Routes
 // ======
 
@@ -507,4 +549,4 @@ router.post('/start/:game_id', isLoggedIn, inGame, startGame);
 router.get('/get_self/:game_id', isLoggedIn, getSelf);
 router.get('/get_opponents/:game_id', isLoggedIn, getOpponents);
 router.get('/get_players/:game_id', getPlayers);
-router.post('/set_card/:game_id', isLoggedIn, setCard);
+router.post('/set_card/:game_id', isLoggedIn, inGame, canPlay, setCard);

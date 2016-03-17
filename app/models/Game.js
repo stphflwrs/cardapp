@@ -46,7 +46,7 @@ GameSchema.methods.distributeHands = function () {
 	});
 };
 
-GameSchema.methods.playCard = function (playerID, cardIndex) {
+GameSchema.methods.playCard = function (playerID, cardIndex, swapperIndex, otherCardIndex) {
 	var game = this;
 
 	// Find the player based on ID
@@ -62,6 +62,13 @@ GameSchema.methods.playCard = function (playerID, cardIndex) {
 			player = game.ai_players[i];
 			break;
 		}
+	}
+
+	if (swapperIndex) {
+		var tempCard = {};
+		tempCard = player.played_cards[swapperIndex];
+		player.played_cards[swapperIndex] = player.hand[otherCardIndex];
+		player.hand[otherCardIndex] = tempCard;
 	}
 
 	if (!player.selected_card) {
