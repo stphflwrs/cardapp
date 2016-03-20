@@ -1,4 +1,141 @@
+<nav class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" ui-sref="home">Card Game</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <!-- <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul> -->
+      <!-- <ul class="nav navbar-nav navbar-right">
+        <li><a href="#">Link</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+          </ul>
+        </li>
+      </ul> -->
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+
 <div class="playfield container-fluid">
+	<div class="row">
+		<div class="col-sm-9">
+			<!-- Self -->
+			<div ng-show="inGame" class="playfield-self row">
+				<div class="col-sm-12">
+					<h3>{{ player.user.username }} <small>(You)</small></h3>
+
+					<div class="col-sm-2">
+						<h4>Played Card</h4>
+						<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+					</div>
+					<div class="col-sm-10">
+						<h4>Hand</h4>
+						<div ng-repeat="card in player.hand track by $index" ng-click="selectCard($index)" class="col-md-2">
+							<img ng-src="{{ card.image_url }}" class="img-responsive" />
+						</div>
+					</div>
+				</div>
+
+				<div class="col-sm-12">
+					<h4>Played Cards</h4>
+					<div ng-repeat="card in player.played_cards track by $index" class="col-md-1">
+						<img ng-src="{{ card.image_url }}" class="img-responsive" />
+					</div>
+				</div>
+			</div>
+
+			<!-- Opponents -->
+			<div class="playfield-opponents row">
+				<div ng-repeat="opponent in opponents" class="col-sm-6">
+					<h3>{{ opponent.user.username }}</h3>
+					<div class="col-sm-12 row">
+						<h4>Played Cards</h4>
+						<div ng-repeat="card in opponent.played_cards track by $index" class="col-md-2">
+							<img ng-src="{{ card.image_url }}" class="img-responsive" />
+						</div>
+					</div>
+
+					<div class="col-sm-12 row">
+						<h4>Hand <small>(Only in beta)</small></h4>
+						<div ng-repeat="card in opponent.hand track by $index" class="col-md-2">
+							<img ng-src="{{ card.image_url }}" class="img-responsive" />
+						</div>
+					</div>
+
+					<div class="col-sm-12 row">
+						<h4>Selected Card <small>(Only in beta)</small></h4>
+						<div class="col-md-2">
+							<img ng-src="{{ opponent.selected_card.image_url }}" class="img-responsive" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<!-- Sidebar -->
+		<div class="playfield-sidebar col-sm-3">
+			<h2>Players</h2>
+			<ul class="list-group">
+				<li ng-show="inGame" class="list-group-item">
+					{{ player.user.username }} <em>(You)</em>
+				</li>
+				<li class="list-group-item" ng-repeat="player in opponents">
+					{{ player.user.username }}
+				</li>
+				<a href ng-click="addAIPlayer()" class="list-group-item">
+					Add AI Player
+				</a>
+			</ul>
+
+			<h2>Options</h2>
+			<div ng-hide="gameStarted">
+				<div class="btn-group btn-group-justified">
+					<div class="btn-group">
+						<button ng-disabled="!loggedIn" ng-click="joinGame()" class="btn btn-success">Join Game</button>
+					</div>
+				</div>
+				<div class="btn-group btn-group-justified">
+					<div class="btn-group">
+						<button ng-disabled="!loggedIn" ng-click="startGame()" class="btn btn-default">Start Game</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- <div class="playfield container-fluid">
 	<div class="row col-lg-12">
 		<div class="col-lg-9">
 			<h2>Playfield</h2>
@@ -30,7 +167,7 @@
 			</div>
 
 			<!-- Player -->
-			<div ng-show="inGame" class="playfield-self row col-md-12">
+			<!-- <div ng-show="inGame" class="playfield-self row col-md-12">
 				<div class="col-md-12">
 					<div class="panel panel-default col-md-12">
 						<h3>You</h3>
@@ -60,9 +197,10 @@
 				</div>
 			</div>
 
-		</div>
+		</div> -->
 
 		<!-- Sidebar -->
+		<!--
 		<div class="playfield-sidebar col-lg-3">
 			<h2>Deck</h2>
 			<div class="panel">
@@ -95,4 +233,4 @@
 			</div>
 		</div>
 	</div>
-</div>
+</div> -->

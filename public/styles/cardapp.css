@@ -4,18 +4,29 @@
 	color: white;
 }
 
+.playfield::before {
+	height: 50px;
+}
+
 .playfield-self {
-	color: black;
+	background-color: white;
+	color: #666666;
+
+	margin-bottom: 30px;
+	padding-bottom: 15px;
 }
 
 .playfield-opponents {
-	color: black;
+	background-color: white;
+	color: #666666;
+
+	padding-bottom: 15px;
 }
 
 .playfield-sidebar {
 	height: 100vh;
 	background-color: #ECF0F1;
-	color: black;
+	color: #666666;
 }
 
 .bg-white {
