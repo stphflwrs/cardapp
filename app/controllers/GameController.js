@@ -336,6 +336,7 @@ var setCard = function (req, res) {
 			return res.status(404).json({status: "Game not found."});
 
 		// Update selected_card for the currently logged in player
+		console.log("I'm here! " + req.body.swapper_index);
 		if (req.body.swapper_index) {
 			game.playCard(req.user._id, req.body.card_index, req.body.swapper_index, req.body.other_card_index);
 		}

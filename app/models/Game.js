@@ -371,10 +371,7 @@ GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver
 			}
 			// No tie, check if I got second:
 			else if (!theirTotals[1] || myTotal > theirTotals[1]) {
-				console.log("I should be here atm");
 				output.points = parseInt(secondMostPoints);
-				console.log(secondMostPoints);
-				console.log(output.points);
 			}
 			// Tied for second:
 			else if (myTotal == theirTotals[1]) {

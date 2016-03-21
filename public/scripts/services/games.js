@@ -173,13 +173,18 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
-		this.setCard = function (gameID, cardIndex) {
+		this.setCard = function (gameID, cardIndex, swapperIndex, otherCardIndex) {
 			var deferred = $q.defer();
 
 			var url = baseURL + "set_card/" + gameID;
 			var data = {
-				card_index: cardIndex
+				card_index: cardIndex,
+				swapper_index: swapperIndex,
+				other_card_index: otherCardIndex
 			};
+
+			console.log(data);
+
 			$http.post(url, data,
 			{
 				headers: _headers

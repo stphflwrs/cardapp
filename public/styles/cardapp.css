@@ -1,46 +1,86 @@
 .playfield {
-	height: 100vh;
-	background-color: #3CA2E0;
-	color: white;
+    height: 100vh;
+    background-color: #3CA2E0;
+    color: white;
 }
 
 .playfield::before {
-	height: 50px;
+    height: 50px;
 }
 
 .playfield-self {
-	background-color: white;
-	color: #666666;
+    background-color: white;
+    color: #666666;
 
-	margin-bottom: 30px;
-	padding-bottom: 15px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
 }
 
 .playfield-opponents {
-	background-color: white;
-	color: #666666;
+    background-color: white;
+    color: #666666;
 
-	padding-bottom: 15px;
+    padding-bottom: 15px;
 }
 
 .playfield-sidebar {
-	height: 100vh;
-	background-color: #ECF0F1;
-	color: #666666;
+    height: 100vh;
+    background-color: #ECF0F1;
+    color: #666666;
+}
+
+.game-card {
+
+}
+
+.game-card:hover {
+    animation: wiggle 0.5s ease infinite alternate;
+}
+
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    33% {
+        transform: rotate(5deg);
+    }
+    66% {
+        transform: rotate(-5deg);
+    }
+}
+
+.game-card-selected {
+    animation: wiggle-scaled 0.75s ease infinite alternate;
+}
+
+.game-card-selected:hover {
+    animation: wiggle-scaled 0.75s ease infinite alternate;
+}
+
+@keyframes wiggle-scaled {
+    0%, 100% {
+        transform: rotate(0deg) scale(1.15, 1.15);
+    }
+    33% {
+        transform: rotate(3deg) scale(1.15, 1.15);
+    }
+    66% {
+        transform: rotate(-3deg) scale(1.15, 1.15);
+    }
 }
 
 .bg-white {
-	background-color: white;
+    background-color: white;
 }
 
 .playable-card {
-	border: transparent solid 4px;
-	position: absolute;
-	bottom: -90vh;
+    border: transparent solid 4px;
+    position: absolute;
+    bottom: -90vh;
 }
 
 .playable-card:hover {
-	cursor: pointer;
-	border: rgba(0, 0, 0, 0.5) solid 4px;
-	bottom: -88vh;
+    cursor: pointer;
+    border: rgba(0, 0, 0, 0.5) solid 4px;
+    bottom: -88vh;
 }

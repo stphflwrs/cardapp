@@ -53,14 +53,24 @@
 			<div ng-show="inGame" class="playfield-self row">
 				<div class="col-sm-12">
 					<h3>{{ player.user.username }} <small>(You)</small></h3>
+					<h4><strong>Score:</strong> {{ player.game_score }} ({{ player.score }})</h4>
+					<hr>
+					<div class="col-sm-12">
+						<button class="btn btn-success" ng-click="submitCards()" ng-disabled="!canSubmit">Play Cards</button>
+					</div>
 
 					<div class="col-sm-2">
-						<h4>Played Card</h4>
-						<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+						<h4>Selected Card</h4>
+						<div ng-if="player.selected_card">
+							<img ng-src="{{ player.selected_card.image_url }}" class="img-responsive" />
+						</div>
 					</div>
 					<div class="col-sm-10">
 						<h4>Hand</h4>
-						<div ng-repeat="card in player.hand track by $index" ng-click="selectCard($index)" class="col-md-2">
+						<div ng-repeat="card in player.hand track by $index"
+							 ng-click="selectCard($index)"
+							 ng-class="{'game-card-selected': card.selected}"
+							 class="game-card col-md-2">
 							<img ng-src="{{ card.image_url }}" class="img-responsive" />
 						</div>
 					</div>
@@ -68,7 +78,10 @@
 
 				<div class="col-sm-12">
 					<h4>Played Cards</h4>
-					<div ng-repeat="card in player.played_cards track by $index" class="col-md-1">
+					<div ng-repeat="card in player.played_cards track by $index"
+						 ng-click="playCard($index)"
+						 ng-class="{'game-card-selected': card.selected}"
+						 class=" game-card col-md-1">
 						<img ng-src="{{ card.image_url }}" class="img-responsive" />
 					</div>
 				</div>
@@ -78,6 +91,9 @@
 			<div class="playfield-opponents row">
 				<div ng-repeat="opponent in opponents" class="col-sm-6">
 					<h3>{{ opponent.user.username }}</h3>
+					<h4><strong>Score:</strong> {{ opponent.game_score }} ({{ opponent.score }})</h4>
+					<hr>
+
 					<div class="col-sm-12 row">
 						<h4>Played Cards</h4>
 						<div ng-repeat="card in opponent.played_cards track by $index" class="col-md-2">

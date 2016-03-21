@@ -26,6 +26,10 @@ angular.module('cardapp')
 		$scope.player = [];
 		$scope.opponents = [];
 
+		$scope.swapperIndex = -1;
+
+		$scope.canSubmit = false;
+
 		// Private variables
 		// ---
 		var socket = undefined;
@@ -68,10 +72,116 @@ angular.module('cardapp')
 		// Sets the selected card of a user in game
 		$scope.selectCard = function (cardIndex) {
 			if (!$scope.player.selected_card) {
-				GamesService.setCard($stateParams.game_id, cardIndex).then(
+				if ($scope.swapperIndex == -1) {
+					if ($scope.player.hand[cardIndex].selected) {
+						// Undo selection
+						$scope.player.hand[cardIndex].selected = false;
+
+						$scope.canSubmit = false;
+					}
+					else {
+						// Unselect all cards
+						$scope.player.hand.forEach(function (card) {
+							card.selected = false;
+						});
+
+						// Pre-select card
+						$scope.player.hand[cardIndex].selected = true;
+
+						$scope.canSubmit = true;
+					}
+				}
+				else {
+					var selectedCards = [];
+					$scope.player.hand.forEach(function (card, index) {
+						if (card.selected) {
+							selectedCards.push(index);
+						}
+					});
+
+					// Properly select cards
+					if (selectedCards.length < 2) {					
+						$scope.player.hand[cardIndex].selected = !$scope.player.hand[cardIndex].selected;
+					}
+					else if (selectedCards.length == 2) {
+						$scope.player.hand[cardIndex].selected = false;
+					}
+
+					selectedCards = [];
+					$scope.player.hand.forEach(function (card, index) {
+						if (card.selected) {
+							selectedCards.push(index);
+						}
+					});
+
+					if (selectedCards.length == 2) {
+						$scope.canSubmit = true;
+					}
+					else {
+						$scope.canSubmit = false;
+					}
+				}
+
+			}
+		};
+
+		// Allows a chopsticks card to be played back into a hand
+		$scope.playCard = function (cardIndex) {
+			var playedCard = $scope.player.played_cards[cardIndex];
+			var cardValue = playedCard.value;
+			var cardType = cardValue.split(":")[1];
+			if (cardType == "swapper" && $scope.player.hand.length > 1) {
+				$scope.player.hand.forEach(function (card) {
+					card.selected = false;
+				});
+
+				if (!playedCard.selected) {
+					// Unselect all cards
+					$scope.player.played_cards.forEach(function (card) {
+						card.selected = false;
+					});
+
+					// Pre-select card
+					$scope.player.played_cards[cardIndex].selected = true;
+
+					$scope.swapperIndex = cardIndex;
+				}
+				else {
+					delete playedCard.selected;
+
+					$scope.swapperIndex = -1;
+				}
+			}
+		};
+
+		$scope.submitCards = function () {
+			var selectedCards = [];
+			$scope.player.hand.forEach(function (card, index) {
+				if (card.selected) {
+					selectedCards.push(index);
+				}
+			});
+
+			if (selectedCards.length == 1) {
+				GamesService.setCard($stateParams.game_id, selectedCards[0]).then(
 					function successCallback(data) {
 						$scope.player.selected_card = $scope.player.hand[cardIndex];
+						$scope.player.hand.splice(selectedCards[0], 1);
+
+						$scope.canSubmit = false;
+					},
+					function errorCallback(data) {
+						console.log(data);
+					});
+			}
+			else if (selectedCards.length == 2 && $scope.swapperIndex > -1) {
+				console.log("asdf");
+				GamesService.setCard($stateParams.game_id, selectedCards[0], $scope.swapperIndex, selectedCards[1]).then(
+					function successCallback(data) {
+						$scope.player.selected_card = $scope.player.hand[selectedCards[0]];
 						$scope.player.hand.splice(cardIndex, 1);
+
+						$scope.canSubmit = false;
 					},
 					function errorCallback(data) {
 						console.log(data);
