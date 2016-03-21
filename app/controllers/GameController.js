@@ -337,7 +337,7 @@ var setCard = function (req, res) {
 
 		// Update selected_card for the currently logged in player
 		console.log("I'm here! " + req.body.swapper_index);
-		if (req.body.swapper_index) {
+		if (req.body.swapper_index != undefined) {
 			game.playCard(req.user._id, req.body.card_index, req.body.swapper_index, req.body.other_card_index);
 		}
 		else {
