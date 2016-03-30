@@ -31,6 +31,10 @@ var GameSchema = new Schema({
 	can_join		: {type: Boolean, default: true}
 });
 
+GameSchema.methods.playAI = function () {
+
+}
+
 GameSchema.methods.distributeHands = function () {
 	var game = this;
 	game.players.forEach(function (player) {
@@ -38,11 +42,12 @@ GameSchema.methods.distributeHands = function () {
 	});
 	game.ai_players.forEach(function (aiPlayer) {
 		aiPlayer.hand = game.deck.cards.splice(0, game.hand_size);
-		(function (aiPlayer) {
-			setTimeout(function () {
-				game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
-			}, 0);
-		})(aiPlayer);
+		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+		// (function (aiPlayer) {
+		// 	setTimeout(function () {
+		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+		// 	}, 0);
+		// })(aiPlayer);
 	});
 };
 
