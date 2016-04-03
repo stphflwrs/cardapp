@@ -42,7 +42,18 @@ GameSchema.methods.distributeHands = function () {
 	});
 	game.ai_players.forEach(function (aiPlayer) {
 		aiPlayer.hand = game.deck.cards.splice(0, game.hand_size);
-		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+
+		var othersCards = [];
+		game.players.forEach(function (player) {
+			othersCards.push(player.played_cards);
+		});
+		game.ai_players.forEach(function (aiPlayer_) {
+			if (!aiPlayer_._id.equals(aiPlayer._id)) {
+				othersCards.push(aiPlayer_.played_cards);
+			}
+		});
+
+		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
 		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
@@ -122,7 +133,18 @@ GameSchema.methods.advanceTurn = function () {
 
 	// Begin AI selection
 	game.ai_players.forEach(function (aiPlayer) {
-		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+
+		var othersCards = [];
+		game.players.forEach(function (player) {
+			othersCards.push(player.played_cards);
+		});
+		game.ai_players.forEach(function (aiPlayer_) {
+			if (!aiPlayer_._id.equals(aiPlayer._id)) {
+				othersCards.push(aiPlayer_.played_cards);
+			}
+		});
+
+		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
 		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
