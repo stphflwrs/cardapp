@@ -1,6 +1,7 @@
 var mongoose = require('mongoose'),
 	util = require('util'),
-	Schema = mongoose.Schema;
+	Schema = mongoose.Schema,
+	Q = require('q');
 
 var BaseSchema = function () {
 	Schema.apply(this, arguments);
@@ -28,11 +29,19 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 
 	var largestScore = -1;
 	var largestScoreIndex = -1;
+	
+	var promises = [];
+	promises.push(Q(Card.find({'_id': {$in: hand}}).exec()));
+	promises.push(Q(Card.find({'_id': {$in: playedCards}}).exec()));
+	otherPlayedCards.forEach(function (oppPlayedCards) {
+		promises.push(Q(Card.find({'_id': {$in: oppPlayedCards}}).exec()));
+	});
 
-	Card.find({
-		'_id': { $in: hand }
-	}).exec(function (err, cards) {
-		console.log("Cards: " + cards);
+	Q.all(promises).then(function (results) {
+// 		console.log("Cards: " + cards);
+		hand = results[0];
+		playedCards = results[1];
+		otherPlayedCards = results.splice(2);
 
 		hand.forEach(function (card, index) {
 			var tempPlayedCards = playedCards.slice();
@@ -46,6 +55,8 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 		});
 
 		if (largestScore > 0) {
+			console.log(largestScoreIndex);
+			console.log(largestScore);
 			return largestScoreIndex;
 		}
 		else {
