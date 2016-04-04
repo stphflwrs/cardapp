@@ -31,23 +31,41 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 	var largestScoreIndex = -1;
 	
 	var promises = [];
-	promises.push(Q(Card.find({'_id': {$in: hand}}).exec()));
-	promises.push(Q(Card.find({'_id': {$in: playedCards}}).exec()));
+	// promises.push(Q(Card.find({'_id': {$in: hand}}).exec()));
+	hand.forEach(function (card) {
+		promises.push(Q(Card.findById(card).exec()));
+	});
+	// promises.push(Q(Card.find({'_id': {$in: playedCards}}).exec()));
+	playedCards.forEach(function (card) {
+		promises.push(Q(Card.findById(card).exec()));
+	});
 	otherPlayedCards.forEach(function (oppPlayedCards) {
-		promises.push(Q(Card.find({'_id': {$in: oppPlayedCards}}).exec()));
+		// promises.push(Q(Card.find({'_id': {$in: oppPlayedCards}}).exec()));
+		oppPlayedCards.forEach(function (card) {
+			promises.push(Q(Card.findById(card).exec()));
+		});
 	});
 
 	Q.all(promises).then(function (results) {
-// 		console.log("Cards: " + cards);
-		hand = results[0];
-		playedCards = results[1];
-		otherPlayedCards = results.splice(2);
+		console.log("Cards: " + results);
+		console.log(hand.length);
+		hand = results.slice(0, hand.length + 1);
+		console.log(hand);
+		console.log(playedCards.length);
+		playedCards = results.slice(hand.length + 1, hand.length + playedCards.length + 1);
+		console.log(playedCards);
+		// otherPlayedCards = results.slice(2);
+		for (var i = 0; i < otherPlayedCards.length; i++) {
+			otherPlayedCards[i] = results.slice(hand.length + playedCards.length + playedCards.length * i, hand.length + playedCards.length + playedCards.length * (i+1));
+		}
 
 		hand.forEach(function (card, index) {
 			var tempPlayedCards = playedCards.slice();
 			tempPlayedCards.push(card);
 
-			var score = Game.calculateScore(tempPlayedCards, otherPlayedCards);
+			var score = Game.calculateScore(tempPlayedCards, otherPlayedCards, false);
+			console.log(tempPlayedCards);
+			console.log(score);
 			if (score > largestScore) {
 				largestScore = score;
 				largestScoreIndex = index;
@@ -57,6 +75,7 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 		if (largestScore > 0) {
 			console.log(largestScoreIndex);
 			console.log(largestScore);
+			console.log(hand[largestScoreIndex]);
 			return largestScoreIndex;
 		}
 		else {
