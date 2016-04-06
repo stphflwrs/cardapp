@@ -33,7 +33,87 @@ var GameSchema = new Schema({
 
 GameSchema.methods.playAI = function () {
 
-}
+};
+
+GameSchema.methods.advanceGame = function () {
+	var game = this;
+	if (game.canAdvanceTurn()) {
+		console.log("Advancing turn");
+		game.advanceTurn();
+
+		// Score all human players (and those pretending to be human)		
+		game.players.forEach(function (player) {
+			// Determine players cards other than self
+			var othersCards = [];
+			game.players.forEach(function (player_) {
+				if (!player_._id.equals(player._id)) {
+					othersCards.push(player_.played_cards);
+				}
+			});
+			game.ai_players.forEach(function (aiPlayer) {
+				othersCards.push(aiPlayer.played_cards);
+			});
+
+			player.score = game.constructor.calculateScore(player.played_cards, othersCards);
+		});
+		
+		// Score all AI Players
+		game.ai_players.forEach(function (aiPlayer) {
+			// Determine AI Players cards other than self (aware?)
+			var othersCards = [];
+			game.players.forEach(function (player) {
+				othersCards.push(player.played_cards);
+			});
+			game.ai_players.forEach(function (aiPlayer_) {
+				if (!aiPlayer_._id.equals(aiPlayer._id)) {
+					othersCards.push(aiPlayer_.played_cards);
+				}
+			});
+
+			aiPlayer.score = game.constructor.calculateScore(aiPlayer.played_cards, othersCards);
+		});
+	}
+	
+	if (game.canAdvanceRound()) {
+		game.advanceRound();
+	}
+	
+	game.save(function (err) {
+		game.playAI();
+	});
+};
+
+GameSchema.methods.canAdvanceTurn = function () {
+	var game = this;
+	for (var i = 0; i < game.players.length; i++) {
+		if (game.players[i].selected_card === undefined) {
+			return false;
+		}
+	}
+	for (var i = 0; i < game.ai_players.length; i++) {
+		if (game.ai_players[i] === undefined) {
+			return false;
+		}
+	}
+	
+	return true;
+};
+
+GameSchema.methods.canAdvanceRound = function () {
+	var game = this;
+	for (var i = 0; i < game.players.length; i++) {
+		if (game.players[i].hand.length != 0) {
+			return false;
+		}
+	}	
+	for (var i = 0; i < game.ai_players.length; i++) {
+		if (game.ai_players[i].hand.length != 0) {
+			return false;
+		}
+	}
+	
+	return true;
+};
 
 GameSchema.methods.distributeHands = function () {
 	var game = this;

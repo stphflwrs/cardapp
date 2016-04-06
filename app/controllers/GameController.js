@@ -338,15 +338,14 @@ var setCard = function (req, res) {
 		if (!game)
 			return res.status(404).json({status: "Game not found."});
 
-		// Update selected_card for the currently logged in player
-		console.log("I'm here! " + req.body.swapper_index);
+		// Play a card depending on whether or a swapper was played
 		if (req.body.swapper_index != undefined) {
 			game.playCard(req.user._id, req.body.card_index, req.body.swapper_index, req.body.other_card_index);
 		}
 		else {
 			game.playCard(req.user._id, req.body.card_index);
 		}
-
+		/*
 		var advanceTurn = true;
 		game.players.forEach(function (player) {
 			if (!player.selected_card) {
@@ -441,13 +440,14 @@ var setCard = function (req, res) {
 				});
 			}
 		}
-
+        */
 		game.save(function (err) {
 			if (err)
 				return res.status(500).send(err);
 
-			if (advanceTurn)
+// 			if (advanceTurn)
 				io.to("game" + game._id).emit('advance turn');
+			game.advanceGame();
 			return res.json({status: "OK"});
 		});
 	});
