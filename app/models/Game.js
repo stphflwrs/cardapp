@@ -190,6 +190,8 @@ GameSchema.methods.advanceRound = function () {
 	if (game.current_round <= game.max_rounds) {
 		game.distributeHands();
 	}
+	
+	game.save();
 };
 
 GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver) {

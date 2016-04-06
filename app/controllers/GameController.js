@@ -163,23 +163,26 @@ var startGame = function (req, res) {
 		if (game.current_round > 0)
 			return res.status(403).json({error: "Game already started."});
 
+		// Deck generation
 		var Deck = mongoose.model('Deck');
 		var deck = new Deck();
 		deck.deck_type = game.deck_type;
 		deck.cards = game.deck_type.generateDeck();
 		deck.shuffleDeck();
 		game.deck = deck;
-
 		game.deck_title = game.deck_type.label;
-		game.current_round = 1;
-		game.distributeHands();
+		
+		//game.current_round = 1;
+		//game.distributeHands();
 		game.deck.save(function (err) {
 			game.save(function (err) {
 				if (err) {
 					return res.status(500).send(err);
 				}
-				else
+				else {
+					setTimeout(game.advanceRound(), 0);
 					return res.json(game);
+				}
 			});
 		});
 	});
