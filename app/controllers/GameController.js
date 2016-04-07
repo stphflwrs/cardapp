@@ -180,7 +180,7 @@ var startGame = function (req, res) {
 					return res.status(500).send(err);
 				}
 				else {
-					setTimeout(game.advanceRound(), 0);
+					setTimeout(game.advanceGame(), 0);
 					return res.json(game);
 				}
 			});
