@@ -47,13 +47,13 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 	});
 
 	Q.all(promises).then(function (results) {
-		console.log("Cards: " + results);
-		console.log(hand.length);
+// 		console.log("Cards: " + results);
+// 		console.log(hand.length);
 		hand = results.slice(0, hand.length + 1);
-		console.log(hand);
-		console.log(playedCards.length);
+// 		console.log(hand);
+// 		console.log(playedCards.length);
 		playedCards = results.slice(hand.length + 1, hand.length + playedCards.length + 1);
-		console.log(playedCards);
+// 		console.log(playedCards);
 		// otherPlayedCards = results.slice(2);
 		for (var i = 0; i < otherPlayedCards.length; i++) {
 			otherPlayedCards[i] = results.slice(hand.length + playedCards.length + playedCards.length * i, hand.length + playedCards.length + playedCards.length * (i+1));
@@ -64,8 +64,8 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 			tempPlayedCards.push(card);
 
 			var score = Game.calculateScore(tempPlayedCards, otherPlayedCards, false);
-			console.log(tempPlayedCards);
-			console.log(score);
+// 			console.log(tempPlayedCards);
+// 			console.log(score);
 			if (score > largestScore) {
 				largestScore = score;
 				largestScoreIndex = index;
@@ -73,9 +73,9 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 		});
 
 		if (largestScore > 0) {
-			console.log(largestScoreIndex);
-			console.log(largestScore);
-			console.log(hand[largestScoreIndex]);
+// 			console.log(largestScoreIndex);
+// 			console.log(largestScore);
+// 			console.log(hand[largestScoreIndex]);
 			return largestScoreIndex;
 		}
 		else {

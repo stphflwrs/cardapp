@@ -32,7 +32,15 @@ var GameSchema = new Schema({
 });
 
 GameSchema.methods.playAI = function () {
-
+	var game = this;
+	game.ai_players.forEach(function (aiPlayer) {
+		console.log(aiPlayer);
+		// (function (aiPlayer) {
+		// 	setTimeout(function () {
+		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
+		// 	}, 0);
+		// })(aiPlayer);
+	});
 };
 
 GameSchema.methods.advanceGame = function () {
