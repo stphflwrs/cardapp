@@ -30,7 +30,11 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 	var largestScore = -1;
 	var largestScoreIndex = -1;
 	
-	var promises = [];
+	console.log(hand);
+	console.log(playedCards);
+	console.log(otherPlayedCards);
+	
+	/* var promises = [];
 	// promises.push(Q(Card.find({'_id': {$in: hand}}).exec()));
 	hand.forEach(function (card) {
 		promises.push(Q(Card.findById(card).exec()));
@@ -57,7 +61,7 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 		// otherPlayedCards = results.slice(2);
 		for (var i = 0; i < otherPlayedCards.length; i++) {
 			otherPlayedCards[i] = results.slice(hand.length + playedCards.length + playedCards.length * i, hand.length + playedCards.length + playedCards.length * (i+1));
-		}
+		} */
 
 		hand.forEach(function (card, index) {
 			var tempPlayedCards = playedCards.slice();
@@ -81,7 +85,7 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 		else {
 			return Math.floor(Math.random() * hand.length);
 		}
-	});
+// 	});
 
 	
 };

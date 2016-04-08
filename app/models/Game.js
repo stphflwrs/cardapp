@@ -36,17 +36,15 @@ GameSchema.methods.playAI = function () {
 	game.ai_players.forEach(function (aiPlayer) {
 		var othersCards = [];
 		game.players.forEach(function (player) {
-			otherCards = othersCards.concat(player.played_cards);
+			othersCards = othersCards.concat([player.played_cards]);
 		});
 		game.ai_players.forEach(function (aiPlayer_) {
 			if (!aiPlayer_._id.equals(aiPlayer._id)) {
-				otherCards = othersCards.concat(aiPlayer_.played_cards);
+				othersCards = othersCards.concat([aiPlayer_.played_cards]);
 			}
 		});
-		console.log(aiPlayer.played_cards);
-		console.log(otherCards);
+		
 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
-		console.log(aiPlayer);
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
 		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
