@@ -172,18 +172,24 @@ var startGame = function (req, res) {
 		game.deck = deck;
 		game.deck_title = game.deck_type.label;
 		
-		//game.current_round = 1;
-		//game.distributeHands();
 		game.deck.save(function (err) {
-			game.save(function (err) {
-				if (err) {
-					return res.status(500).send(err);
-				}
-				else {
-					setTimeout(game.advanceGame(), 0);
-					return res.json(game);
-				}
+			var Deck = mongoose.model('Deck');
+			Deck.findById(game.deck._id).populate('cards').exec(function (error, deck) {
+				if (error)
+					return res.status(500).send(error);
+
+				game.deck = deck;
+				game.save(function (err) {
+					if (err) {
+						return res.status(500).send(err);
+					}
+					else {
+						setTimeout(game.advanceGame(), 0);
+						return res.json(game);
+					}
+				});
 			});
+			
 		});
 	});
 };

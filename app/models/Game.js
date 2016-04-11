@@ -44,7 +44,7 @@ GameSchema.methods.playAI = function () {
 				othersCards = othersCards.concat([aiPlayer_.played_cards]);
 			}
 		});
-		
+
 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
@@ -59,7 +59,6 @@ GameSchema.methods.playAI = function () {
 GameSchema.methods.advanceGame = function () {
 	var game = this;
 	if (game.canAdvanceTurn()) {
-		console.log("Advancing turn");
 		game.advanceTurn();
 
 		// Score all human players (and those pretending to be human)		
@@ -100,6 +99,7 @@ GameSchema.methods.advanceGame = function () {
 	}
 	
 	game.save(function (err) {
+
 		game.playAI();
 	});
 };
@@ -138,21 +138,12 @@ GameSchema.methods.canAdvanceRound = function () {
 
 GameSchema.methods.distributeHands = function () {
 	var game = this;
+
 	game.players.forEach(function (player) {
 		player.hand = game.deck.cards.splice(0, game.hand_size);
 	});
 	game.ai_players.forEach(function (aiPlayer) {
 		aiPlayer.hand = game.deck.cards.splice(0, game.hand_size);
-
-		var othersCards = [];
-		game.players.forEach(function (player) {
-			othersCards.push(player.played_cards);
-		});
-		game.ai_players.forEach(function (aiPlayer_) {
-			if (!aiPlayer_._id.equals(aiPlayer._id)) {
-				othersCards.push(aiPlayer_.played_cards);
-			}
-		});
 
 // 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 

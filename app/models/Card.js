@@ -1,6 +1,5 @@
 var mongoose = require('mongoose'),
-    Schema = mongoose.Schema,
-    relationship = require('mongoose-relationship');
+    Schema = mongoose.Schema;
 
 var CardSchema = new Schema({
     label           : String,
