@@ -29,64 +29,26 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 
 	var largestScore = -1;
 	var largestScoreIndex = -1;
-	
-	console.log(hand);
-	// console.log(playedCards);
-	// console.log(otherPlayedCards);
-	
-	/* var promises = [];
-	// promises.push(Q(Card.find({'_id': {$in: hand}}).exec()));
-	hand.forEach(function (card) {
-		promises.push(Q(Card.findById(card).exec()));
-	});
-	// promises.push(Q(Card.find({'_id': {$in: playedCards}}).exec()));
-	playedCards.forEach(function (card) {
-		promises.push(Q(Card.findById(card).exec()));
-	});
-	otherPlayedCards.forEach(function (oppPlayedCards) {
-		// promises.push(Q(Card.find({'_id': {$in: oppPlayedCards}}).exec()));
-		oppPlayedCards.forEach(function (card) {
-			promises.push(Q(Card.findById(card).exec()));
-		});
-	});
 
-	Q.all(promises).then(function (results) {
-// 		console.log("Cards: " + results);
-// 		console.log(hand.length);
-		hand = results.slice(0, hand.length + 1);
-// 		console.log(hand);
-// 		console.log(playedCards.length);
-		playedCards = results.slice(hand.length + 1, hand.length + playedCards.length + 1);
-// 		console.log(playedCards);
-		// otherPlayedCards = results.slice(2);
-		for (var i = 0; i < otherPlayedCards.length; i++) {
-			otherPlayedCards[i] = results.slice(hand.length + playedCards.length + playedCards.length * i, hand.length + playedCards.length + playedCards.length * (i+1));
-		} */
+	hand.forEach(function (card, index) {
+		// Add card to hand
+		var tempPlayedCards = playedCards.slice();
+		tempPlayedCards.push(card);
 
-		hand.forEach(function (card, index) {
-			var tempPlayedCards = playedCards.slice();
-			tempPlayedCards.push(card);
-
-			// console.log(tempPlayedCards);
-			var score = Game.calculateScore(tempPlayedCards, otherPlayedCards, false);
-// 			console.log(tempPlayedCards);
-// 			console.log(score);
-			if (score > largestScore) {
-				largestScore = score;
-				largestScoreIndex = index;
-			}
-		});
-
-		if (largestScore > 0) {
-			console.log(largestScoreIndex);
-			console.log(largestScore);
-// 			console.log(hand[largestScoreIndex]);
-			return largestScoreIndex;
+		// Get what the score might be
+		var score = Game.calculateScore(tempPlayedCards, otherPlayedCards, false);
+		if (score > largestScore) {
+			largestScore = score;
+			largestScoreIndex = index;
 		}
-		else {
-			return { cardIndex: Math.floor(Math.random() * hand.length) };
-		}
-// 	});
+	});
+
+	if (largestScore > 0) {
+		return largestScoreIndex;
+	}
+	else {
+		return { cardIndex: Math.floor(Math.random() * hand.length) };
+	}
 
 	
 };
