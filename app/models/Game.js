@@ -1,5 +1,6 @@
 var mongoose = require('mongoose'),
-	Schema = mongoose.Schema;
+	Schema = mongoose.Schema,
+	Q = require('q');
 	
 var GameSchema = new Schema({
 	title			: {type: String, required: true},
@@ -154,6 +155,7 @@ GameSchema.methods.distributeHands = function () {
 		});
 
 // 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
 		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));

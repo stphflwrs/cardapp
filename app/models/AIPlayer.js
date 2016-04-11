@@ -83,7 +83,7 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 			return largestScoreIndex;
 		}
 		else {
-			return Math.floor(Math.random() * hand.length);
+			return { cardIndex: Math.floor(Math.random() * hand.length) };
 		}
 // 	});
 

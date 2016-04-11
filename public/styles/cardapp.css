@@ -2,6 +2,7 @@
     height: 100vh;
     background-color: #3CA2E0;
     color: white;
+    overflow-y:scroll;
 }
 
 .playfield::before {
