@@ -172,24 +172,18 @@ var startGame = function (req, res) {
 		game.deck = deck;
 		game.deck_title = game.deck_type.label;
 		
+		//game.current_round = 1;
+		//game.distributeHands();
 		game.deck.save(function (err) {
-			var Deck = mongoose.model('Deck');
-			Deck.findById(game.deck._id).populate('cards').exec(function (error, deck) {
-				if (error)
-					return res.status(500).send(error);
-
-				game.deck = deck;
-				game.save(function (err) {
-					if (err) {
-						return res.status(500).send(err);
-					}
-					else {
-						setTimeout(game.advanceGame(), 0);
-						return res.json(game);
-					}
-				});
+			game.save(function (err) {
+				if (err) {
+					return res.status(500).send(err);
+				}
+				else {
+					setTimeout(game.advanceGame(), 0);
+					return res.json(game);
+				}
 			});
-			
 		});
 	});
 };
@@ -508,7 +502,7 @@ function canJoin(req, res, next) {
 }
 
 function canPlay(req, res, next) {
-	Game.findById(req.params.game_id).populate('players.user players.hand').exec(function (err, game) {
+	Game.findById(req.params.game_id).populate('players.user players.hand players.played_cards').exec(function (err, game) {
 		if (err)
 			return res.status(500).send(err);
 
@@ -535,7 +529,7 @@ function canPlay(req, res, next) {
 		// Check if they can play a swapper card
 		if (req.body.swapper_index) {
 			var swapperIndex = req.body.swapper_index;
-			if (!player.hand[swapperIndex].value.split()[1] == "swapper") {
+			if (!player.played_cards[swapperIndex].value.split()[1] == "swapper") {
 				return res.status(400).json({ status: "Invalid move." });
 			}
 		}
