@@ -45,13 +45,13 @@ GameSchema.methods.playAI = function () {
 			}
 		});
 
-		// game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
-		aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
-			.then(function (result) {
-			console.log("Card Index Selected: " + result.cardIndex);
+		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+		// aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
+		// 	.then(function (result) {
+		// 	console.log("Card Index Selected: " + result.cardIndex);
 
-			game.playCard(aiPlayer.user._id, result.cardIndex);
-		});
+		// 	game.playCard(aiPlayer.user._id, result.cardIndex);
+		// });
 		// (function (aiPlayer) {
 		// 	setTimeout(function () {
 		// 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand));
@@ -243,7 +243,7 @@ GameSchema.methods.advanceTurn = function () {
 			}
 		});
 
-		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+		// game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// var cardIndex = aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
 		// 	.then(function (result) {
 		// 	console.log("Card Index Selected: " + result);

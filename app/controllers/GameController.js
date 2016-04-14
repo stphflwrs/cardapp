@@ -180,7 +180,13 @@ var startGame = function (req, res) {
 					return res.status(500).send(err);
 				}
 				else {
-					setTimeout(game.advanceGame(), 0);
+					var Deck = mongoose.model('Deck');
+					Deck.findById(game.deck._id).populate('cards').exec(function (error, deck) {
+						if (!error) {
+							game.deck = deck;
+							setTimeout(game.advanceGame(), 0);
+						}
+					});
 					return res.json(game);
 				}
 			});
@@ -294,7 +300,11 @@ var getPlayers = function (req, res) {
 var setCard = function (req, res) {
 	Game.findById(req.params.game_id).populate([{
 		path: 'deck',
-		model: 'Deck'
+		model: 'Deck',
+		populate: {
+			path: 'cards',
+			model: 'Card'
+		}
 	},{
 		path: 'players',
 		populate: [{
@@ -446,7 +456,8 @@ var setCard = function (req, res) {
 				return res.status(500).send(err);
 
 // 			if (advanceTurn)
-				io.to("game" + game._id).emit('advance turn');
+			io.to("game" + game._id).emit('advance turn');
+			console.log(game);
 			game.advanceGame();
 			return res.json({status: "OK"});
 		});
