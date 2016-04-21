@@ -9,6 +9,6 @@ The objective of this is to explore strategy and AI in the card game Sushi Go (a
 - Card / Deck CRUD *(complete)*
 - Gameplay logic *(complete)*
 - UI for multiplayer *(complete)*
-- Scoring *(close enough? hehe)*
+- Scoring *(complete)*
 - UI Update *(on hiatus)*
 - AIs *(in progress)*
