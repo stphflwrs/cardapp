@@ -231,6 +231,8 @@ angular
                     }
                 }
             })
+            
+            
 
             .state('play', {
                 clearance: 1,
