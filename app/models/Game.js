@@ -29,7 +29,15 @@ var GameSchema = new Schema({
 	deck_title		: {type: String},
 	max_rounds		: {type: Number, default: 3},
 	current_round	: {type: Number, default: 0},
-	can_join		: {type: Boolean, default: true}
+	can_join		: {type: Boolean, default: true},
+
+	isSimulation	: {type: Boolean, default: false},
+	maxSimulations	: {type: Number, default: 100},
+	numSimulations	: {type: Number, default: 0},
+	results			: [{
+		winner			: {type: String},
+		score			: {type: Number}
+	}]
 });
 
 GameSchema.methods.playAI = function () {
@@ -59,7 +67,10 @@ GameSchema.methods.playAI = function () {
 		// })(aiPlayer);
 	});
 	
-	game.save();
+	game.save()
+	.then(function () {
+		game.advanceGame();
+	});
 };
 
 GameSchema.methods.advanceGame = function () {
@@ -294,6 +305,27 @@ GameSchema.methods.advanceRound = function () {
 	game.current_round += 1;
 	if (game.current_round <= game.max_rounds) {
 		game.distributeHands();
+	}
+	else {
+		if (game.isSimulatation) {
+			// Restart game and log result
+			game.numSimulations += 1;
+			game.current_round = 0;
+			game.ai_players.forEach(function (aiPlayer) {
+				aiPlayer.game_score = 0;
+			});
+			game.deck = game.deck_type.generateDeck();
+			game.deck.shuffleDeck();
+			game.save()
+			.then(function () {
+				if (game.numSimulations < game.maxSimulations)
+					game.advanceGame();
+			})
+			.catch(function (err) {
+				console.log(err);
+			});
+			
+		}
 	}
 	
 	game.save();

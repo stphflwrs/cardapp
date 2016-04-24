@@ -232,7 +232,25 @@ angular
                 }
             })
             
-            
+            .state('simulate', {
+                clearance: 5,
+                url: '/simulate',
+                parent: 'dashboard',
+                templateUrl: 'views/dashboard/simulate/index.html',
+                controller: 'SimulateCtrl',
+                controllerAs: 'vm',
+                resolve: {
+                    loadMyFiles: function ($ocLazyLoad) {
+                        return $ocLazyLoad.load({
+                            name: 'cardapp',
+                            files: [
+                            'scripts/controllers/dashboard/simulate/index.js',
+                            'scripts/services/games.js'
+                            ]
+                        })
+                    }
+                }
+            })
 
             .state('play', {
                 clearance: 1,
