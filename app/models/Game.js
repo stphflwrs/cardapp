@@ -96,6 +96,7 @@ GameSchema.methods.advanceGame = function () {
 		
 		// Score all AI Players
 		game.ai_players.forEach(function (aiPlayer) {
+		    console.log(aiPlayer);
 			// Determine AI Players cards other than self (aware?)
 			var othersCards = [];
 			game.players.forEach(function (player) {
@@ -215,31 +216,46 @@ GameSchema.methods.advanceTurn = function () {
 		aiPlayer.selected_card = undefined;
 	});
 
-	// Move hands to the next player
-	var tempHand = game.players[0].hand;
-	for (var i = 0; i < game.players.length; i++) {
-		// Last player
-		if (i == game.players.length - 1) {
-			game.players[0].hand = tempHand;
-		}
-		else {
-			var temp = game.players[i + 1].hand;
-			game.players[i + 1].hand = tempHand;
-			tempHand = temp;
-		}
-	}
-	for (var i = 0; i < game.ai_players.length; i++) {
-		// Last player
-		if (i == game.ai_players.length - 1) {
-			game.players[0].hand = game.ai_players[game.ai_players.length - 1].hand;
-			game.ai_players[game.ai_players.length - 1].hand = tempHand;
-		}
-		else {
-			var temp = game.ai_players[i + 1].hand;
-			game.ai_players[i + 1].hand = tempHand;
-			tempHand = temp;
-		}
-	}
+	// Move hands to the next playere
+	if (!game.isSimulation) {
+    	var tempHand = game.players[0].hand;
+    	for (var i = 0; i < game.players.length; i++) {
+    		// Last player
+    		if (i == game.players.length - 1) {
+    			game.players[0].hand = tempHand;
+    		}
+    		else {
+    			var temp = game.players[i + 1].hand;
+    			game.players[i + 1].hand = tempHand;
+    			tempHand = temp;
+    		}
+    	}
+    	for (var i = 0; i < game.ai_players.length; i++) {
+    		// Last player
+    		if (i == game.ai_players.length - 1) {
+    			game.players[0].hand = game.ai_players[game.ai_players.length - 1].hand;
+    			game.ai_players[game.ai_players.length - 1].hand = tempHand;
+    		}
+    		else {
+    			var temp = game.ai_players[i + 1].hand;
+    			game.ai_players[i + 1].hand = tempHand;
+    			tempHand = temp;
+    		}
+    	}
+    }
+    else {
+        var tempHand = game.ai_players[1].hand;
+        for (var i = 0; i < game.ai_players.length; i++) {
+            if (i == game.ai_players.length - 1) {
+                game.ai_players[0].hand = tempHand;
+            }
+            else {
+                var temp = game.ai_players[i + 1].hand;
+                game.ai_players[i + 1].hand = tempHand;
+                tempHand = temp;
+            }
+        }
+    }
 
 	// Begin AI selection
 	game.ai_players.forEach(function (aiPlayer) {
@@ -332,6 +348,7 @@ GameSchema.methods.advanceRound = function () {
 };
 
 GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver) {
+    console.log(playerCards);
 	// Calculates the points earned from set scoring cards of a label "setLabel"
 	var calcSet = function (setLabel, cards) {
 		var output = {

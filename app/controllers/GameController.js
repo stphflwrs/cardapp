@@ -85,13 +85,21 @@ function postSimulate(req, res) {
 		deck.deck_type = game.deck_type;
 		deck.cards = game.deck_type.generateDeck();
 		deck.shuffleDeck();
-		game.deck = deck;
-		game.deck_title = game.deck_type.label;
-
+		game.deck_title = deckType.label;
+		
+	    return deck.save();
+	})
+	.then(function (deck) {
+	    var Deck = mongoose.model('Deck');
+		return Deck.findById(deck._id).populate('cards').exec();
+		
+	})
+	.then(function (deck) {
 		game.save(function (err) {
 			if (err)
 				return res.status(422).send(err);
 			else {
+			    game.deck = deck;
 				setTimeout(function () {
 					game.advanceGame()
 				}, 0);
