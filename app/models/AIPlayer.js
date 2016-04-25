@@ -1,7 +1,8 @@
 var mongoose = require('mongoose'),
 	util = require('util'),
 	Schema = mongoose.Schema,
-	Q = require('q');
+	Q = require('q'),
+	hash = require('object-hash');
 
 var BaseSchema = function () {
 	Schema.apply(this, arguments);
@@ -26,7 +27,9 @@ var BasicRLPlayerSchema =  new BaseSchema({
 			method			: String,
 			label			: String,
 			count			: Number
-		}]
+		}],
+		hand_hash		: String,
+		played_hash		: String
 	}],
 	actions			: [{
 		card			: { type: Schema.ObjectId, ref: 'Card' },
@@ -76,22 +79,43 @@ BasicRLPlayerSchema.methods.selectCard = function (hand, playedCards, otherPlaye
 
 	var sortedHand = sortHand(hand);
 	var played = sortPlayed(generatePlayed(playedCards));
+	// console.log(JSON.stringify(sortedHand.toObject()));
+	var handHash = hash(JSON.stringify(sortedHand.toObject()));
+	var playedHash = hash(JSON.stringify(played));
+	// console.log(hash(sortedHand.toObject()));
 
-	var selectedIndex = Math.floor(Math.random() * sortedHand.length);
-	player.states.push({
-		hand: sortedHand,
-		played: played
-	});
-	player.actions.push({
-		card: sortedHand[selectedIndex],
-		reward: 0
+	var stateIndex = player.states.findIndex(function (state) {
+		return (state.hand_hash == handHash && state.playedHash == playedHash);
 	});
 
-	player.save();
+	var selectedIndex = -1;
+	// Add new state entry
+	if (stateIndex == -1) {
+		selectedIndex = Math.floor(Math.random() * sortedHand.length);
+		player.states.push({
+			hand: sortedHand,
+			played: played,
+			hand_hash: handHash,
+			played_hash: playedHash
+		});
+		player.actions.push({
+			card: sortedHand[selectedIndex],
+			reward: 0
+		});
+		player.state_history = player.states.length - 1;
 
-	return hand.findIndex(function (element) {
-		return element.label == sortedHand[selectedIndex].label;
-	});
+		player.save()
+		.then(function () {
+			return hand.findIndex(function (element) {
+				return element.label == sortedHand[selectedIndex].label;
+			});
+		});
+	}
+	// State already happened
+	else {
+		console.log("Hey woah");
+		throw "WOAH";
+	}
 
 };
 
@@ -151,7 +175,7 @@ function generatePlayed(playedCards) {
 
 			if (setIndex != -1) {
 				played[setIndex].count++;
-				if (played[setIndex] >= setSize)
+				if (played[setIndex].count >= setSize)
 					played[setIndex].count -= setSize;
 			}
 			else {
@@ -162,7 +186,25 @@ function generatePlayed(playedCards) {
 				});
 			}
 		}
-		else if (method == 'count' || method == 'swapper' || method == 'mostleast' || method == 'most') {
+		else if (method == 'most') {
+			var mostValue = values[3];
+
+			var mostIndex = played.findIndex(function (element) {
+				return (element.method == 'most' && element.label == label);
+			});
+
+			if (mostIndex != -1) {
+				played[setIndex] += mostValue;
+			}
+			else {
+				played.push({
+					method: method,
+					label: label,
+					count: mostValue
+				});
+			}
+		}
+		else if (method == 'count' || method == 'swapper' || method == 'mostleast') {
 			var pIndex = played.findIndex(function (element) {
 				return (element.method == method && element.label == label);
 			});

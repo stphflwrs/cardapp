@@ -60,58 +60,6 @@ var deleteGame = function (req, res) {
 	});
 };
 
-// Obscure Methods
-// ===============
-
-function postSimulate(req, res) {
-	var game = new Game(req.body);
-
-	var RandomAIPlayer = mongoose.model('RandomAIPlayer');
-	var ShortTermAIPlayer = mongoose.model('ShortTermAIPlayer');
-
-	var player1 = new RandomAIPlayer();
-	var player2 = new ShortTermAIPlayer();
-
-	game.ai_players.push(player1);
-	game.ai_players.push(player2);
-	game.isSimulation = true;
-
-	var DeckType = mongoose.model('DeckType');
-	DeckType.findById(req.body.deck_type_id).exec()
-	.then(function (deckType) {
-		game.deck_type = deckType;
-		var Deck = mongoose.model('Deck');
-		var deck = new Deck();
-		deck.deck_type = game.deck_type;
-		deck.cards = game.deck_type.generateDeck();
-		deck.shuffleDeck();
-		game.deck_title = deckType.label;
-		
-	    return deck.save();
-	})
-	.then(function (deck) {
-	    var Deck = mongoose.model('Deck');
-		return Deck.findById(deck._id).populate('cards').exec();
-		
-	})
-	.then(function (deck) {
-		game.save(function (err) {
-			if (err)
-				return res.status(422).send(err);
-			else {
-			    game.deck = deck;
-				setTimeout(function () {
-					game.advanceGame()
-				}, 0);
-				return res.json(game);
-			}
-		});
-	})
-	.catch(function (err) {
-		console.log(err);
-	});
-}
-
 // Pre-Game Methods
 // ================
 
@@ -407,109 +355,13 @@ var setCard = function (req, res) {
 		else {
 			game.playCard(req.user._id, req.body.card_index);
 		}
-		/*
-		var advanceTurn = true;
-		game.players.forEach(function (player) {
-			if (!player.selected_card) {
-				advanceTurn = false;
-			}
-		});
-		game.ai_players.forEach(function (aiPlayer) {
-			if (!aiPlayer.selected_card) {
-				advanceTurn = false;
-			}
-		});
-
-		// Update score if turn advancing
-		if (advanceTurn) {
-			game.advanceTurn();
-
-			game.players.forEach(function (player) {
-				// Determine players cards other than self
-				var othersCards = [];
-				game.players.forEach(function (player_) {
-					if (!player_._id.equals(player._id)) {
-						othersCards.push(player_.played_cards);
-					}
-				});
-				game.ai_players.forEach(function (aiPlayer) {
-					othersCards.push(aiPlayer.played_cards);
-				});
-
-				player.score = Game.calculateScore(player.played_cards, othersCards);
-			});
-
-			game.ai_players.forEach(function (aiPlayer) {
-				// Determine AI Players cards other than self (aware?)
-				var othersCards = [];
-				game.players.forEach(function (player) {
-					othersCards.push(player.played_cards);
-				});
-				game.ai_players.forEach(function (aiPlayer_) {
-					if (!aiPlayer_._id.equals(aiPlayer._id)) {
-						othersCards.push(aiPlayer_.played_cards);
-					}
-				});
-
-				aiPlayer.score = Game.calculateScore(aiPlayer.played_cards, othersCards);
-			});
-		}
-
-		var advanceRound = true;
-		game.players.forEach(function (player) {
-			if (player.hand.length > 0) {
-				advanceRound = false;
-			}
-		});
-		game.ai_players.forEach(function (aiPlayer) {
-			if (aiPlayer.hand.length > 0) {
-				advanceRound = false;
-			}
-		});
-		if (advanceRound) {
-			game.advanceRound();
-
-			// Only calculate after last turn
-			if (game.current_round > game.max_rounds) {
-				game.players.forEach(function (player) {
-					// Determine players cards other than self
-					var othersCards = [];
-					game.players.forEach(function (player_) {
-						if (!player_._id.equals(player._id)) {
-							othersCards.push(player_.game_cards);
-						}
-					});
-					game.ai_players.forEach(function (aiPlayer) {
-						othersCards.push(aiPlayer.game_cards);
-					});
-
-					player.game_score += Game.calculateScore(player.played_cards, othersCards, true);
-				});
-
-				game.ai_players.forEach(function (aiPlayer) {
-					// Determine AI Players cards other than self (aware?)
-					var othersCards = [];
-					game.players.forEach(function (player) {
-						othersCards.push(player.game_cards);
-					});
-					game.ai_players.forEach(function (aiPlayer_) {
-						if (!aiPlayer_._id.equals(aiPlayer._id)) {
-							othersCards.push(aiPlayer_.game_cards);
-						}
-					});
-
-					aiPlayer.game_score += Game.calculateScore(aiPlayer.played_cards, othersCards, true);
-				});
-			}
-		}
-        */
 		game.save(function (err) {
-			if (err)
+			if (err) {
+				console.log(err);
 				return res.status(500).send(err);
+			}
 
-// 			if (advanceTurn)
 			io.to("game" + game._id).emit('advance turn');
-			console.log(game);
 			game.advanceGame();
 			return res.json({status: "OK"});
 		});
@@ -528,27 +380,26 @@ function isLoggedIn(req, res, next) {
 }
 
 function inGame(req, res, next) {
-	return next();
 
-	// Game.findById(req.params.game_id).exec(function (err, game) {
-	// 	if (err)
-	// 		return res.status(500).send(err);
+	Game.findById(req.params.game_id).exec(function (err, game) {
+		if (err)
+			return res.status(500).send(err);
 
-	// 	if (!game)
-	// 		return res.status(404).json({ status: "Game not found." });
+		if (!game)
+			return res.status(404).json({ status: "Game not found." });
 
-	// 	var output = false;
-	// 	game.players.forEach(function (player) {
-	// 		if (player.user.equals(req.user._id)) {
-	// 			output = true;
-	// 		}
-	// 	});
+		var output = false;
+		game.players.forEach(function (player) {
+			if (player.user.equals(req.user._id)) {
+				output = true;
+			}
+		});
 
-	// 	if (output == true)
-	// 		return next();
-	// 	else
-	// 		return res.status(401).send({ status: "Not in game." });
-	// });
+		if (output == true)
+			return next();
+		else
+			return res.status(401).send({ status: "Not in game." });
+	});
 }
 
 function canJoin(req, res, next) {
@@ -619,5 +470,3 @@ router.get('/get_self/:game_id', isLoggedIn, getSelf);
 router.get('/get_opponents/:game_id', isLoggedIn, getOpponents);
 router.get('/get_players/:game_id', getPlayers);
 router.post('/set_card/:game_id', isLoggedIn, inGame, canPlay, setCard);
-
-router.post('/simulate', postSimulate);
