@@ -29,15 +29,7 @@ var GameSchema = new Schema({
 	deck_title		: {type: String},
 	max_rounds		: {type: Number, default: 3},
 	current_round	: {type: Number, default: 0},
-	can_join		: {type: Boolean, default: true},
-
-	isSimulation	: {type: Boolean, default: false},
-	maxSimulations	: {type: Number, default: 100},
-	numSimulations	: {type: Number, default: 0},
-	results			: [{
-		winner			: {type: String},
-		score			: {type: Number}
-	}]
+	can_join		: {type: Boolean, default: true}
 });
 
 GameSchema.methods.playAI = function () {
@@ -212,31 +204,13 @@ GameSchema.methods.advanceTurn = function () {
 		aiPlayer.selected_card = undefined;
 	});
 
-	// Move hands to the next playere
-	var tempHand = game.players[0].hand;
-	for (var i = 0; i < game.players.length; i++) {
-		// Last player
-		if (i == game.players.length - 1) {
-			game.players[0].hand = tempHand;
-		}
-		else {
-			var temp = game.players[i + 1].hand;
-			game.players[i + 1].hand = tempHand;
-			tempHand = temp;
-		}
-	}
-	for (var i = 0; i < game.ai_players.length; i++) {
-		// Last player
-		if (i == game.ai_players.length - 1) {
-			game.players[0].hand = game.ai_players[game.ai_players.length - 1].hand;
-			game.ai_players[game.ai_players.length - 1].hand = tempHand;
-		}
-		else {
-			var temp = game.ai_players[i + 1].hand;
-			game.ai_players[i + 1].hand = tempHand;
-			tempHand = temp;
-		}
-	}
+	// Move hands to the next player
+	if (game.players.length == 0)
+		cycleHandsAIOnly();
+	else if (game.ai_players == 0)
+		cycleHandsHumanOnly();
+	else
+		cycleHandsMixed();
 
 	// Begin AI selection
 	game.ai_players.forEach(function (aiPlayer) {
@@ -264,6 +238,63 @@ GameSchema.methods.advanceTurn = function () {
 		// 	}, 0);
 		// })(aiPlayer);
 	});
+
+	function cycleHandsHumanOnly() {
+		var tempHand = game.players[0].hand;
+		for (var i = 0; i < game.players.length; i++) {
+			// Last player
+			if (i == game.players.length - 1) {
+				game.players[0].hand = tempHand;
+			}
+			else {
+				var temp = game.players[i + 1].hand;
+				game.players[i + 1].hand = tempHand;
+				tempHand = temp;
+			}
+		}
+	}
+
+	function cycleHandsAIOnly() {
+		var tempHand = game.ai_players[0].hand;
+		for (var i = 0; i < game.ai_players.length; i++) {
+			// Last player
+			if (i == game.ai_players.length - 1) {
+				game.ai_players[0].hand = tempHand;
+			}
+			else {
+				var temp = game.ai_players[i + 1].hand;
+				game.ai_players[i + 1].hand = tempHand;
+				tempHand = temp;
+			}
+		}
+	}
+
+	function cycleHandsMixed() {
+		var tempHand = game.players[0].hand;
+		for (var i = 0; i < game.players.length; i++) {
+			// Last player
+			if (i == game.players.length - 1) {
+				game.players[0].hand = tempHand;
+			}
+			else {
+				var temp = game.players[i + 1].hand;
+				game.players[i + 1].hand = tempHand;
+				tempHand = temp;
+			}
+		}
+		for (var i = 0; i < game.ai_players.length; i++) {
+			// Last player
+			if (i == game.ai_players.length - 1) {
+				game.players[0].hand = game.ai_players[game.ai_players.length - 1].hand;
+				game.ai_players[game.ai_players.length - 1].hand = tempHand;
+			}
+			else {
+				var temp = game.ai_players[i + 1].hand;
+				game.ai_players[i + 1].hand = tempHand;
+				tempHand = temp;
+			}
+		}
+	}
 };
 
 GameSchema.methods.advanceRound = function () {
@@ -329,6 +360,8 @@ GameSchema.methods.advanceRound = function () {
 };
 
 GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver) {
+
+	console.log(playerCards);
 	// Calculates the points earned from set scoring cards of a label "setLabel"
 	var calcSet = function (setLabel, cards) {
 		var output = {

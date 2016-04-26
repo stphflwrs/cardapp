@@ -119,11 +119,14 @@ angular.module('cardapp')
 			return deferred.promise;
 		};
 
-		this.addAIPlayer = function (gameID) {
+		this.addAIPlayer = function (gameID, playerModel) {
 			var deferred = $q.defer();
 
 			var url = baseURL + "addai/" + gameID;
-			$http.post(url, {},
+			var data = {
+				playerModel: playerModel
+			};
+			$http.post(url, data,
 			{
 				headers: _headers
 			}).then(

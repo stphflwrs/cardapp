@@ -129,8 +129,14 @@
 				<li class="list-group-item" ng-repeat="player in opponents">
 					{{ player.user.username }}
 				</li>
-				<a href ng-click="addAIPlayer()" class="list-group-item">
-					Add AI Player
+				<a href ng-click="addAIPlayer('BasicRLPlayer')" class="list-group-item">
+					Add BasicRL AI Player
+				</a>
+				<a href ng-click="addAIPlayer('RandomAIPlayer')" class="list-group-item">
+					Add Random AI Player
+				</a>
+				<a href ng-click="addAIPlayer('ShortTermAIPlayer')" class="list-group-item">
+					Add Short Term AI Player
 				</a>
 			</ul>
 

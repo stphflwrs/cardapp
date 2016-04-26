@@ -99,8 +99,10 @@ var addAIPlayer = function (req, res) {
 			return res.status(404).json({status: "Game not found."});
 		}
 
-		var RandomAIPlayer = mongoose.model('BasicRLPlayer');
-		var player = new RandomAIPlayer();
+		var Player = mongoose.model(req.body.playerModel);
+
+		// var RandomAIPlayer = mongoose.model('BasicRLPlayer');
+		var player = new Player();
 		player.save(function (err) {
 			if (err)
 				return res.status(422).send(err);

@@ -48,8 +48,8 @@ angular.module('cardapp')
 		};
 
 		// Adds AI to game if logged in user is in game
-		$scope.addAIPlayer = function () {
-			GamesService.addAIPlayer($stateParams.game_id).then(
+		$scope.addAIPlayer = function (aiPlayer) {
+			GamesService.addAIPlayer($stateParams.game_id, aiPlayer).then(
 				function successCallback(data) {
 					update();
 				},
