@@ -44,7 +44,7 @@ function postInitialize(req, res) {
 	.then(function (simulation) {
 		var baseGame = new Game({
 			title: 'sim' + simulation._id.toString(),
-			deck_type: '56f030ddbd682a752eb5f13e'
+			deck_type: '56e65e5a07c42a480dfb0a18'
 		});
 
 		var Player1 = mongoose.model(simulation.playerModel1);
@@ -62,8 +62,8 @@ function postInitialize(req, res) {
 		game.deck = deck;
 		game.deck_title = deckType.label;
 
-		game.ai_players.push(player1);
-		game.ai_players.push(player2);
+		game.ai_players.push({user: player1});
+		game.ai_players.push({user: player2});
 
 		simulation.baseGame = game;
 		return [simulation.save(), deck.save(), game.save()];
@@ -87,21 +87,6 @@ function postStart(req, res) {
 		},{
 			path: 'deck_type',
 			model: 'DeckType'
-		},{
-			path: 'players',
-			populate: [{
-				path: 'user',
-				model: 'User'
-			},{
-				path: 'hand',
-				model: 'Card'
-			},{
-				path: 'played_cards',
-				model: 'Card'
-			},{
-				path: 'selected_card',
-				model: 'Card'
-			}]
 		},{
 			path: 'ai_players',
 			populate: [{
@@ -150,21 +135,6 @@ function postStart(req, res) {
 			path: 'deck_type',
 			model: 'DeckType'
 		},{
-			path: 'players',
-			populate: [{
-				path: 'user',
-				model: 'User'
-			},{
-				path: 'hand',
-				model: 'Card'
-			},{
-				path: 'played_cards',
-				model: 'Card'
-			},{
-				path: 'selected_card',
-				model: 'Card'
-			}]
-		},{
 			path: 'ai_players',
 			populate: [{
 				path: 'user',
@@ -185,14 +155,15 @@ function postStart(req, res) {
 	})
 	.spread(function (simulation, game) {
 		var deckPromise = Deck.findById(game.deck._id).populate('cards').execQ();
+		console.log(game.ai_players);
 
 		return [simulation, game, deckPromise];
 	})
 	.spread(function (simulation, game, deck) {
 		game.deck = deck;
-		console.log(JSON.stringify(game));
-		// setTimeout(function () { game.advanceGame() }, 0);
-		res.json(simulation);
+		// console.log(JSON.stringify(game));
+		setTimeout(function () { game.advanceGame() }, 0);
+		res.json(game);
 	})
 	.catch(function (error) {
 		console.log(error);
