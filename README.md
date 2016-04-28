@@ -12,3 +12,4 @@ The objective of this is to explore strategy and AI in the card game Sushi Go (a
 - Scoring *(complete)*
 - UI Update *(on hiatus)*
 - AIs *(in progress)*
+
