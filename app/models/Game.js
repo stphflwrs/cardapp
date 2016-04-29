@@ -45,6 +45,7 @@ GameSchema.methods.playAI = function () {
 			}
 		});
 
+		console.log(aiPlayer);
 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
 		// 	.then(function (result) {
@@ -64,7 +65,7 @@ GameSchema.methods.playAI = function () {
 
 GameSchema.methods.advanceGame = function () {
 	var game = this;
-	if (game.canAdvanceTurn()) {
+	if (game.canAdvanceTurn() && game.current_round > 0) {
 		game.advanceTurn();
 
 		// Score all human players (and those pretending to be human)		
@@ -96,6 +97,7 @@ GameSchema.methods.advanceGame = function () {
 				}
 			});
 
+			// console.log(JSON.stringify(aiPlayer));
 			aiPlayer.score = game.constructor.calculateScore(aiPlayer.played_cards, othersCards);
 		});
 	}
