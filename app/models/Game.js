@@ -45,7 +45,7 @@ GameSchema.methods.playAI = function () {
 			}
 		});
 
-		console.log(aiPlayer);
+		// console.log(aiPlayer);
 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
 		// aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
 		// 	.then(function (result) {
@@ -335,6 +335,7 @@ GameSchema.methods.advanceRound = function () {
 	game.current_round += 1;
 	if (game.current_round <= game.max_rounds) {
 		game.distributeHands();
+		game.deck.save();
 	}
 	else {
 		if (game.isSimulatation) {
@@ -363,7 +364,7 @@ GameSchema.methods.advanceRound = function () {
 
 GameSchema.statics.calculateScore = function (playerCards, othersCards, gameOver) {
 
-	console.log(playerCards);
+	// console.log(playerCards);
 	// Calculates the points earned from set scoring cards of a label "setLabel"
 	var calcSet = function (setLabel, cards) {
 		var output = {
