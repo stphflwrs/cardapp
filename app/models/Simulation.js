@@ -24,7 +24,7 @@ SimulationSchema.methods.runGame = function (gameIndex) {
 		else if (game.ai_players[0].selected_card && game.ai_players[1].selected_card) {
 			game.advanceGame();
 		}
-	}, 50);
+	}, 5);
 
 	return deferred.promise;
 }
