@@ -4,7 +4,8 @@ var express = require('express'),
 	Simulation = mongoose.model('Simulation'),
 	Game = mongoose.model('Game'),
 	DeckType = mongoose.model('DeckType'),
-	Deck = mongoose.model('Deck');
+	Deck = mongoose.model('Deck'),
+	Q = require('q');
 
 module.exports = function (app) {
 	app.use('/api/simulation', router);
@@ -106,79 +107,278 @@ function postStart(req, res) {
 		return [simulation, gamePromise];
 	})
 	.spread(function (simulation, game) {
+		// delete simulation.games;
 		simulation.baseGame = game;
 		var deckPromise = Deck.findById(game.deck._id).populate('cards').execQ();
 		return [simulation, deckPromise];
 	})
 	.spread(function (simulation, deck) {
-		var copiedGame = JSON.parse(JSON.stringify(simulation.baseGame));
-		var copiedDeck = JSON.parse(JSON.stringify(deck));
-		// objectIdDel(copiedGame);
-		delete copiedGame._id;
-		delete copiedDeck._id;
+		// var copiedGame = JSON.parse(JSON.stringify(simulation.baseGame));
+		// var copiedDeck = JSON.parse(JSON.stringify(deck));
+		// // objectIdDel(copiedGame);
+		// delete copiedGame._id;
+		// delete copiedDeck._id;
 		
-		var newDeck = new Deck(copiedDeck);
-		newDeck.shuffleDeck();
-		console.log(newDeck);
-		var newGame = new Game(copiedGame);
-		return [simulation, newGame.save(), newDeck.save()];
-	})
-	.spread(function (simulation, game, deck) {
-		game.deck = deck;
-		simulation.games = simulation.games.concat(game);
-		return [simulation.save(), game.save()];
-	})
-	.spread(function (simulation, game) {
-		var gamePromise = Game.findById(simulation.games[0])
-		.populate([{
-			path: 'deck',
-			model: 'Deck'
-		},{
-			path: 'deck_type',
-			model: 'DeckType'
-		},{
-			path: 'ai_players',
-			populate: [{
-				path: 'user',
-				model: 'AIPlayer'
-			},{
-				path: 'hand',
-				model: 'Card'
-			},{
-				path: 'played_cards',
-				model: 'Card'
-			},{
-				path: 'selected_card',
-				model: 'Card'
-			}]
-		}]).execQ();
+		// var newDeck = new Deck(copiedDeck);
+		// newDeck.shuffleDeck();
+		// console.log(newDeck);
+		// var newGame = new Game(copiedGame);
 
-		return [simulation, gamePromise];
-	})
-	.spread(function (simulation, game) {
-		var deckPromise = Deck.findById(game.deck._id).populate('cards').execQ();
-		// console.log(game.ai_players);
+		var copiedGames = [];
+		var copiedDecks = [];
+		var newGames = [];
+		var newDecks = [];
+		var gamePromises = [];
+		var deckPromises = [];
+		for (var i = 0; i < simulation.maxSimulations; i++) {
+			copiedGames[i] = JSON.parse(JSON.stringify(simulation.baseGame));
+			delete copiedGames[i]._id;
 
-		return [simulation, game, deckPromise];
+			copiedDecks[i] = JSON.parse(JSON.stringify(deck));
+			delete copiedDecks[i]._id;
+
+			newGames[i] = new Game(copiedGames[i]);
+			newDecks[i] = new Deck(copiedDecks[i]);
+			newDecks[i].shuffleDeck();
+			newGames[i].deck = newDecks[i];
+
+			gamePromises[i] = newGames[i].save();
+			deckPromises[i] = newDecks[i].save();
+		}
+
+		// return [simulation, newGame.save(), newDeck.save()];
+		return [simulation, Q.all(gamePromises), Q.all(deckPromises)];
 	})
-	.spread(function (simulation, game, deck) {
-		game.deck = deck;
-		// console.log(JSON.stringify(game));
-		// setTimeout(function () { game.advanceGame() }, 0);
-		setInterval(function () {
-			var canAdvance = true;
-			if (game.current_round == 0) {
-				game.advanceGame();
+	.spread(function (simulation, games, decks) {
+		// game.deck = deck;
+		// simulation.games = simulation.games.concat(game);
+		// return [simulation.save(), game.save()];
+
+		for (var i = 0; i < simulation.maxSimulations; i++) {
+			// games[i].deck = decks[i];
+			simulation.games = simulation.games.concat(games[i]);
+		}
+
+		return [simulation.save(), games];
+	})
+	.spread(function (simulation, games) {
+		// console.log(simulation);
+		// console.log(games[0].deck.cards);
+		// res.json({status: 'OK'});
+
+		var gamePromises = [];
+		var deckPromises = [];
+		for (var i = 0; i < simulation.maxSimulations; i++) {
+			gamePromises[i] = Game.findById(simulation.games[i])
+			.populate([{
+				path: 'deck',
+				model: 'Deck'
+			},{
+				path: 'deck_type',
+				model: 'DeckType'
+			},{
+				path: 'ai_players',
+				populate: [{
+					path: 'user',
+					model: 'AIPlayer'
+				},{
+					path: 'hand',
+					model: 'Card'
+				},{
+					path: 'played_cards',
+					model: 'Card'
+				},{
+					path: 'selected_card',
+					model: 'Card'
+				}]
+			}]).execQ();
+
+			deckPromises[i] = Deck.findById(games[i].deck._id)
+			.populate([{
+				path: 'cards',
+				model: 'Card'
+			},{
+				path: 'deck_type',
+				model: 'DeckType'
+			}]).execQ();
+		}
+
+		return [simulation, Q.all(gamePromises), Q.all(deckPromises)];
+	})
+	.spread(function (simulation, games, decks) {
+
+		for (var i = 0; i < simulation.maxSimulations; i++) {
+			simulation.games[i] = games[i];
+			simulation.games[i].deck = decks[i];
+		}
+
+		doThing(0);
+
+		function doThing(index) {
+			simulation.runGame(index)
+			.then(function () {
+				console.log("Simulation " + index + " complete!");
+				if (index < simulation.maxSimulations)
+					doThing(index + 1);
+			});
+		}
+
+		// for (var i = 0; i < simulation.maxSimulations; i++) {
+		// 	(function (i) {
+		// 		simulation.games[i] = games[i];
+		// 		simulation.games[i].deck = decks[i];
+		// 		simulation.runGame(i)
+		// 		.then(function () {
+		// 			console.log("Simulation finished!");
+		// 			simulation.games[i].save();
+		// 		});
+		// 	})(i);
+		// }
+
+		// simulation.games[0] = games[0];
+		// simulation.games[0].deck = decks[0];
+		// simulation.runGame(0)
+		// .then(function () {
+		// 	console.log("Simulation finished!");
+		// });
+
+		// for (var i = 0; i < simulation.maxSimulations; i++) {
+		// 	games[i].deck = decks[i];
+
+		// 	(function(game, index) {
+		// 		setInterval(function() {
+		// 			if (game.current_round == 0) {
+		// 				game.advanceGame();
+		// 				simulation.gameStatus[index] = "Pending";
+		// 				simulation.save();
+		// 			}
+		// 			else if (game.ai_players[0].selected_card && game.ai_players[1].selected_card && game.current_round <= game.max_rounds) {
+		// 				game.advanceGame();
+		// 			}
+		// 			else if (game.current_round > game.max_rounds) {
+		// 				console.log("Simulation " + index + " done!");
+		// 				simulation.gameStatus[index] = "Complete";
+		// 				simulation.save();
+		// 				console.log(game.current_round);
+		// 				var interval = this;
+		// 				game.save()
+		// 				.then(function () {
+		// 					clearInterval(interval);
+		// 				});
+		// 				// clearInterval(this);
+		// 			}
+
+		// 		}, 10);
+		// 	})(games[i], i);
+		// }
+
+		res.json({status: 'OK'});
+	})
+	// .spread(function (simulation, games) {
+	// 	var gamePromise = Game.findById(simulation.games[0])
+	// 	.populate([{
+	// 		path: 'deck',
+	// 		model: 'Deck'
+	// 	},{
+	// 		path: 'deck_type',
+	// 		model: 'DeckType'
+	// 	},{
+	// 		path: 'ai_players',
+	// 		populate: [{
+	// 			path: 'user',
+	// 			model: 'AIPlayer'
+	// 		},{
+	// 			path: 'hand',
+	// 			model: 'Card'
+	// 		},{
+	// 			path: 'played_cards',
+	// 			model: 'Card'
+	// 		},{
+	// 			path: 'selected_card',
+	// 			model: 'Card'
+	// 		}]
+	// 	}]).execQ();
+
+	// 	return [simulation, gamePromise];
+	// })
+	// .spread(function (simulation, games) {
+	// 	var deckPromise = Deck.findById(game.deck._id).populate('cards').execQ();
+	// 	// console.log(game.ai_players);
+
+	// 	return [simulation, game, deckPromise];
+	// })
+	// .spread(function (simulation, game, deck) {
+	// 	game.deck = deck;
+	// 	// console.log(JSON.stringify(game));
+	// 	// setTimeout(function () { game.advanceGame() }, 0);
+	// 	setInterval(function () {
+	// 		var canAdvance = true;
+	// 		if (game.current_round == 0) {
+	// 			game.advanceGame();
+	// 		}
+	// 		else if (game.ai_players[0].selected_card && game.ai_players[1].selected_card && game.current_round <= game.max_rounds) {
+	// 			game.advanceGame();
+	// 		}
+	// 		else if (game.current_round > game.max_rounds) {
+	// 			console.log("Simulation Done!");
+	// 			clearInterval(this);
+	// 		}
+	// 	}, 50);
+	// 	res.json(game);
+	// })
+	.catch(function (error) {
+		console.log(error);
+		res.status(500).send(error);
+	});
+}
+
+function getResults(req, res) {
+	Simulation.findById(req.params.id)
+	.populate('games').execQ()
+	.then(function (simulation) {
+		var results = {};
+		results.scores = [];
+
+		var successfulGames = [];
+		simulation.games.forEach(function (game) {
+			if (game.current_round > game.max_rounds) {
+				successfulGames.push(game);
 			}
-			else if (game.ai_players[0].selected_card && game.ai_players[1].selected_card && game.current_round <= game.max_rounds) {
-				game.advanceGame();
+		});
+
+		var player1Wins = 0;
+		var player2Wins = 0;
+		var ties = 0;
+		successfulGames.forEach(function (game) {
+			results.scores.push({
+				player1: game.ai_players[0].game_score,
+				player2: game.ai_players[1].game_score
+			});
+
+			if (game.ai_players[0].game_score > game.ai_players[1].game_score) {
+				player1Wins += 1;
 			}
-			else if (game.current_round > game.max_rounds) {
-				console.log("Simulation Done!");
-				clearInterval(this);
+			else if (game.ai_players[0].game_score < game.ai_players[1].game_score) {
+				player2Wins += 1;
 			}
-		}, 50);
-		res.json(game);
+			else {
+				ties += 1;
+			}
+		});
+
+		results.player1Wins = player1Wins;
+		results.player2Wins = player2Wins;
+		results.ties = ties;
+
+		if (player1Wins > player2Wins)
+			results.winner = simulation.playerModel1;
+		else if (player2Wins > player1Wins)
+			results.winner = simulation.playerModel2;
+		else
+			results.winner = "";
+
+		res.json(results);
+
 	})
 	.catch(function (error) {
 		console.log(error);
@@ -208,3 +408,5 @@ router.post('/create', postCreate);
 router.post('/setai', postSetAI);
 router.post('/init', postInitialize);
 router.post('/start', postStart);
+
+router.get('/results/:id', getResults);
