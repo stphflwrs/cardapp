@@ -47,6 +47,7 @@ GameSchema.methods.playAI = function () {
 
 		// console.log(aiPlayer);
 		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+		// aiPlayer.user.save();
 		// aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
 		// 	.then(function (result) {
 		// 	console.log("Card Index Selected: " + result.cardIndex);

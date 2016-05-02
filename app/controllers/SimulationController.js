@@ -5,6 +5,7 @@ var express = require('express'),
 	Game = mongoose.model('Game'),
 	DeckType = mongoose.model('DeckType'),
 	Deck = mongoose.model('Deck'),
+	AIPlayer = mongoose.model('AIPlayer'),
 	Q = require('q');
 
 module.exports = function (app) {
@@ -217,9 +218,52 @@ function postStart(req, res) {
 		function doThing(index) {
 			simulation.runGame(index)
 			.then(function () {
-				console.log("Simulation " + index + " complete!");
-				if (index < simulation.maxSimulations)
+				return simulation.games[index].save();
+			})
+			.then(function () {
+				return [simulation.games[index].ai_players[0].user.save(), simulation.games[index].ai_players[1].user.save()];
+			})
+			.spread(function (player1, player2) {
+				if (index + 1 < simulation.maxSimulations)
+					return [Game.findById(simulation.games[index + 1]._id)
+					.populate([{
+						path: 'deck',
+						model: 'Deck'
+					},{
+						path: 'deck_type',
+						model: 'DeckType'
+					},{
+						path: 'ai_players',
+						populate: [{
+							path: 'user',
+							model: 'AIPlayer'
+						},{
+							path: 'hand',
+							model: 'Card'
+						},{
+							path: 'played_cards',
+							model: 'Card'
+						},{
+							path: 'selected_card',
+							model: 'Card'
+						}]
+					}]).execQ(),
+					Deck.findById(simulation.games[index + 1].deck._id).populate('cards').execQ()];
+			})
+			.spread(function (game, deck) {
+				console.log("Simulation " + (index + 1) + " complete!");
+				// console.log(player1);
+				// console.log(player2);
+				if (index + 1 < simulation.maxSimulations) {
+					simulation.games[index + 1] = game;
+					simulation.games[index + 1].deck = deck
+					// simulation.games[index + 1].ai_players[0].user = player1;
+					// simulation.games[index + 1].ai_players[1].user = player2;
 					doThing(index + 1);
+				}
+			})
+			.catch(function (error) {
+				console.log(error.stack);
 			});
 		}
 
@@ -327,7 +371,7 @@ function postStart(req, res) {
 	// 	res.json(game);
 	// })
 	.catch(function (error) {
-		console.log(error);
+		console.log(error.stack);
 		res.status(500).send(error);
 	});
 }

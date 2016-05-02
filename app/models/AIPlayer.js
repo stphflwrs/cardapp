@@ -22,6 +22,7 @@ var ShortTermAIPlayerSchema = new BaseSchema({
 var BasicRLPlayerSchema =  new BaseSchema({
 	username		: {type: String, default: "BasicRL"},
 	states			: [{
+		encounters		: { type: Number, default: 0 },
 		hand			: [{ type: Schema.ObjectId, ref: 'Card' }],
 		played			: [{
 			method			: String,
@@ -29,11 +30,12 @@ var BasicRLPlayerSchema =  new BaseSchema({
 			count			: Number
 		}],
 		hand_hash		: String,
-		played_hash		: String
-	}],
-	actions			: [{
-		card			: { type: Schema.ObjectId, ref: 'Card' },
-		reward			: Number
+		played_hash		: String,
+		actions			: [{
+			encounters		: { type: Number, default: 0 },
+			card			: { type: Schema.ObjectId, ref: 'Card' },
+			reward			: Number
+		}]
 	}],
 	state_history	: [{ type: Number }]
 });
@@ -79,43 +81,130 @@ BasicRLPlayerSchema.methods.selectCard = function (hand, playedCards, otherPlaye
 
 	var sortedHand = sortHand(hand);
 	var played = sortPlayed(generatePlayed(playedCards));
-	// console.log(JSON.stringify(sortedHand.toObject()));
 	var handHash = hash(JSON.stringify(sortedHand.toObject()));
 	var playedHash = hash(JSON.stringify(played));
-	// console.log(hash(sortedHand.toObject()));
 
 	var stateIndex = player.states.findIndex(function (state) {
 		return (state.hand_hash == handHash && state.playedHash == playedHash);
 	});
 
-	var selectedIndex = -1;
-	// Add new state entry
+	var selectedIndex = Math.floor(Math.random() * sortedHand.length);
 	if (stateIndex == -1) {
-		selectedIndex = Math.floor(Math.random() * sortedHand.length);
-		player.states.push({
+		// selectedIndex = Math.floor(Math.random() * sortedHand.length);
+
+		var action = {
+			encounters: 1,
+			card: sortedHand[selectedIndex],
+			reward: 0
+		};
+
+		var state = {
+			encounters: 1,
 			hand: sortedHand,
 			played: played,
 			hand_hash: handHash,
-			played_hash: playedHash
-		});
-		player.actions.push({
-			card: sortedHand[selectedIndex],
-			reward: 0
-		});
-		player.state_history = player.states.length - 1;
+			played_hash: playedHash,
+			actions: []
+		};
 
-		player.save()
-		.then(function () {
-			return hand.findIndex(function (element) {
-				return element.label == sortedHand[selectedIndex].label;
-			});
-		});
+		state.actions.push(action);
+		stateIndex = player.states.length;
+
+		// console.log(state);
+		player.states.push(state);
+		// player.state_history.push(stateIndex);
 	}
-	// State already happened
 	else {
-		console.log("Hey woah");
-		throw "WOAH";
+		console.log("State encountered before!");
+
+		var state = player.states[stateIndex];
+		states.encounters += 1;
+
+		var actionIndex = state.actions.findIndex(function (action) {
+			return action.card == sortedHand[selectedIndex]._id;
+		});
+
+		var action = {};
+		if (actionIndex == -1) {
+			action.card = {
+				encounters: 1,
+				card: sortedHand[selectedIndex],
+				reward: 0
+			};
+
+			actionIndex = state.actions.length;
+		}
+		else {
+			action = state.actions[actionIndex];
+			action.encounters += 1;
+		}
+
+		state.actions[actionIndex] = action;
+		player.states[stateIndex] = state;
 	}
+
+	player.state_history.push(stateIndex);
+
+	return hand.findIndex(function (card) {
+		return card.value == sortedHand[selectedIndex].value;
+	});
+
+	// var selectedIndex = -1;
+	// // Add new state entry
+	// if (stateIndex == -1) {
+	// 	selectedIndex = Math.floor(Math.random() * sortedHand.length);
+
+	// 	var action = {
+	// 		card: sortedHand[selectedIndex],
+	// 		reward: 0
+	// 	};
+
+	// 	player.states.push({
+	// 		hand: sortedHand,
+	// 		played: played,
+	// 		hand_hash: handHash,
+	// 		played_hash: playedHash
+	// 	});
+	// 	player.states[player.states.length - 1].actions.push(action);
+	// 	player.state_history.push(player.states.length - 1);
+
+	// 	return hand.findIndex(function (element) {
+	// 		return element.label == sortedHand[selectedIndex].label;
+	// 	});
+	// 	// player.save();
+	// 	// .then(function () {
+	// 		// return hand.findIndex(function (element) {
+	// 		// 	return element.label == sortedHand[selectedIndex].label;
+	// 		// });
+	// 	// });
+	// }
+	// // State already happened
+	// else {
+	// 	console.log('State already happened');
+	// 	selectedIndex = Math.floor(Math.random() * sortedHand.length);
+
+	// 	var state = player.states[stateIndex];
+	// 	state.encounters += 1;
+
+	// 	var action = {
+	// 		card: sortedHand[selectedIndex],
+	// 		reward: 0
+	// 	};
+
+	// 	state.actions.push(action);
+	// 	player.state_history.push(stateIndex);
+
+
+	// 	return hand.findIndex(function (element) {
+	// 		return element.label == sortHand[selectedIndex].label;
+	// 	});
+	// 	// player.save();
+	// 	// .then(function () {
+	// 	// 	return hand.findIndex(function (element) {
+	// 	// 		return element.label == sortHand[selectedIndex].label;
+	// 	// 	});
+	// 	// });
+	// }
 
 };
 
