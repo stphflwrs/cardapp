@@ -61,7 +61,7 @@ GameSchema.methods.playAI = function () {
 		// })(aiPlayer);
 	});
 	
-	game.save();
+	// game.save();
 };
 
 GameSchema.methods.advanceGame = function () {

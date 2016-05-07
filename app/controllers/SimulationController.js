@@ -255,6 +255,7 @@ function postStart(req, res) {
 				// console.log(player1);
 				// console.log(player2);
 				if (index + 1 < simulation.maxSimulations) {
+					simulation.games[index] = {};
 					simulation.games[index + 1] = game;
 					simulation.games[index + 1].deck = deck
 					// simulation.games[index + 1].ai_players[0].user = player1;
