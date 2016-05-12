@@ -46,7 +46,15 @@ GameSchema.methods.playAI = function () {
 		});
 
 		// console.log(aiPlayer);
-		game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+		(function (aiPlayer) {
+			if (aiPlayer.hand.length + aiPlayer.played_cards.length == 10) {
+				// if (aiPlayer.user.__t == "BasicRLPlayer") {
+				// 	console.log("PLAYER\n======")
+				// 	console.log(aiPlayer);
+				// }
+				game.playCard(aiPlayer.user._id, aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards));
+			}
+		})(aiPlayer);
 		// aiPlayer.user.save();
 		// aiPlayer.user.selectCard(aiPlayer.hand, aiPlayer.played_cards, othersCards)
 		// 	.then(function (result) {
@@ -108,8 +116,8 @@ GameSchema.methods.advanceGame = function () {
 	}
 	
 	game.save(function (err) {
-
-		game.playAI();
+		if (game.current_round <= game.max_rounds)
+			game.playAI();
 	});
 };
 

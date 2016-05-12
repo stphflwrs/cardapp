@@ -21,6 +21,8 @@ var ShortTermAIPlayerSchema = new BaseSchema({
 });
 var BasicRLPlayerSchema =  new BaseSchema({
 	username		: {type: String, default: "BasicRL"},
+	stateHistory	: [{type: Schema.ObjectId, ref: 'State'}],
+	lastScore		: Number
 	// states			: [{
 	// 	encounters		: { type: Number, default: 0 },
 	// 	// hand			: [{ type: Schema.ObjectId, ref: 'Card' }],
@@ -75,33 +77,68 @@ ShortTermAIPlayerSchema.methods.selectCard = function (hand, playedCards, otherP
 };
 
 BasicRLPlayerSchema.methods.selectCard = function (hand, playedCards, otherPlayedCards, trainingMode) {
+	// console.log("HAND\n====");
+	// console.log(hand);
+	var Game = mongoose.model('Game');
 	var State = mongoose.model('State');
 	var player = this;
 
+	var discountFactor = 0.7;
+	var learningFactor = 0.8;
+
 	trainingMode = true;
+
 
 	var sortedHand = sortHand(hand);
 	var played = sortPlayed(generatePlayed(playedCards));
-	var handHash = hash(JSON.stringify(sortedHand.toObject()));
+	var handHash = hash(JSON.stringify(sortedHand));
 	var playedHash = hash(JSON.stringify(played));
+
 
 	// Find the state...possibly
 	// var stateIndex = player.states.findIndex(function (state) {
 	// 	return (state.hand_hash == handHash && state.playedHash == playedHash);
 	// });
 
-	State.findOne({
-		handHash: handHash,
-		playedHash: playedHash
-	}).populate('actions.card').exec()
+	var currentScore = Game.calculateScore(playedCards, otherPlayedCards, false);
+
+	var statePromises = [];
+	player.stateHistory.forEach(function (stateId) {
+		statePromises.push(State.findById(stateId));
+	});
+
+	Q.all(statePromises)
+	.then(function (states) {
+		var reward = currentScore - player.lastScore;
+		states.forEach(function(state, index) {
+			state.actions[state.lastActionIndex].reward += Math.pow(discountFactor, states.length - index) * reward;
+			state.save();
+		});
+
+		return State.findOne({
+			handHash: handHash,
+			playedHash: playedHash
+		}).populate('actions.card').exec();
+	})
 	.then(callback)
 	.catch(function (error) {
 		console.log(error.stack);
 	});
 
+	// State.findOne({
+	// 	handHash: handHash,
+	// 	playedHash: playedHash
+	// }).populate('actions.card').exec()
+	// .then(callback)
+	// .catch(function (error) {
+	// 	console.log(error.stack);
+	// });
+
 	function callback(state) {
+
+
 		var selectedIndex = Math.floor(Math.random() * sortedHand.length);
-		console.log(state);
+		// console.log(state);
 		if (state == null) {
 			// selectedIndex = Math.floor(Math.random() * sortedHand.length);
 
@@ -117,7 +154,8 @@ BasicRLPlayerSchema.methods.selectCard = function (hand, playedCards, otherPlaye
 				// played: played,
 				handHash: handHash,
 				playedHash: playedHash,
-				actions: []
+				actions: [],
+				lastActionIndex: 0
 			};
 
 			state.actions.push(action);
@@ -129,38 +167,74 @@ BasicRLPlayerSchema.methods.selectCard = function (hand, playedCards, otherPlaye
 
 			// Save to database
 			var stateDoc = new State(state);
-			stateDoc.save();
+			stateDoc.save()
+			.then(function (stateD) {
+				player.stateHistory.push(stateD);
+				player.lastScore = Game.calculateScore(playedCards, otherPlayedCards, false);
+			});
 		}
 		else {
 			console.log("State encountered before!");
-			console.log(sortedHand);
-			console.log(played);
+			player.stateHistory.push(state);
+			player.lastScore = Game.calculateScore(playedCards, otherPlayedCards, false);
 
 			// var state = player.states[stateIndex];
 			state.encounters += 1;
 
+			var sortedActions = state.actions.sort(function (a, b) {
+				return a.reward - b.reward;
+			});
+
+			var decisionMode = Math.random();
+			if (decisionMode < learningFactor) {
+				sortedActions.forEach(function (action) {
+					if (action.reward > 0) {
+						var index = sortedHand.findIndex(function (card) { return card._id.equals(action.card); });
+						if (index != -1)
+							selectedIndex = index;
+					}
+				});
+			}
+
 			var actionIndex = state.actions.findIndex(function (action) {
-				return action.card == sortedHand[selectedIndex];
+				return action.card.equals(sortedHand[selectedIndex]._id);
 			});
 
 			var action = {};
 			if (actionIndex == -1) {
-				action.card = {
+				action = {
 					encounters: 1,
 					card: sortedHand[selectedIndex],
 					reward: 0
 				};
 
-				actionIndex = state.actions.length;
+				// actionIndex = state.actions.length;
+				state.actions.push(action);
+				state.lastActionIndex = state.actions.length - 1;
 			}
 			else {
 				action = state.actions[actionIndex];
 				action.encounters += 1;
+				state.actions[actionIndex] = action;
+				state.lastActionIndex = actionIndex;
 			}
 
-			state.actions[actionIndex] = action;
+			// state.actions[actionIndex] = action;
+
+			console.log(state);
+			// console.log(hand);
+			// console.log(sortedHand);
+			// console.log(playedCards);
 			// player.states[stateIndex] = state;
 			state.save();
+		}
+
+		if (player.stateHistory.length > 5)
+			player.stateHistory.shift();
+
+		if (sortedHand.length <= 1) {
+			player.lastScore = 0;
+			player.stateHistory = [];
 		}
 
 		// player.state_history.push(stateIndex);
@@ -237,8 +311,9 @@ var BasicRLPlayer = AIPlayer.discriminator('BasicRLPlayer', BasicRLPlayerSchema)
 
 // Sorts return a new object
 function sortHand(hand) {
-	var newHand = Object.assign({}, hand);
-	return hand.sort(function (a, b) {
+	// var newHand = Object.assign({}, hand);
+	var newHand = hand.slice(0);
+	return newHand.sort(function (a, b) {
 		return a.label - b.label;
 	});
 }
@@ -286,7 +361,8 @@ function generatePlayed(playedCards) {
 			if (setIndex != -1) {
 				played[setIndex].count++;
 				if (played[setIndex].count >= setSize)
-					played[setIndex].count -= setSize;
+					played.splice(setIndex, 1);
+					// played[setIndex].count -= setSize;
 			}
 			else {
 				played.push({
@@ -336,8 +412,9 @@ function generatePlayed(playedCards) {
 }
 
 function sortPlayed(played) {
-	var newPlayed = Object.assign({}, played);
-	return played.sort(function (a, b) {
+	// var newPlayed = Object.assign({}, played);
+	var newPlayed = played.slice(0);
+	return newPlayed.sort(function (a, b) {
 		return a.label - b.label;
 	});
 }
